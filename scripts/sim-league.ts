@@ -11,7 +11,7 @@
  * Each bot:
  *   - has its own SpacetimeDB identity (tokens saved in scripts/.sim-tokens.json)
  *   - is a seeded Nessie customer (npx tsx scripts/seed-nessie.ts --execute)
- *   - takes a turn every 10 s (bots rotate in a fixed order). On its turn it
+ *   - one bot takes a turn every 3 s (bots rotate in a fixed order). On its turn it
  *     tries several in-character moves against its current data, picks one that
  *     visibly changes its score (savers lean toward gains, splurgers toward
  *     losses), writes it to Nessie, re-scores with the browser's engine and
@@ -51,7 +51,7 @@ loadEnvFile('.env.local');
 const arg = (name: string) => process.argv.find(a => a.startsWith(`--${name}=`))?.split('=')[1];
 const ME = arg('me') ?? 'maya';
 const MAX_MOVES = Number(arg('moves') ?? Infinity);
-const [MIN_S, MAX_S = MIN_S] = (arg('interval') ?? '10').split('-').map(Number);
+const [MIN_S, MAX_S = MIN_S] = (arg('interval') ?? '3').split('-').map(Number);
 const STDB_URI = (process.env.VITE_SPACETIMEDB_HOST || 'wss://maincloud.spacetimedb.com').replace(/^http/, 'ws');
 const STDB_DB = process.env.VITE_SPACETIMEDB_DB || process.env.VITE_SPACETIMEDB_DB_NAME || 'fantasyfinance';
 const TOKENS_FILE = 'scripts/.sim-tokens.json';
@@ -232,7 +232,8 @@ const scoreOf = (bot: Bot, bundle: NessieBundle) =>
 async function rescore(bot: Bot) {
   const asOf = localToday();
   const month = monthOf(asOf);
-  bot.bundle = await nessie.fetchBundle(bot.customer._id);
+  // Reuse the merchant list rather than looking up each merchant (keeps turns fast).
+  bot.bundle = await nessie.fetchBundle(bot.customer._id, { merchants: [...merchantByName.values()] });
   const data = nessieToProviderData(bot.bundle, 'nessie');
 
   // Never take a member over from someone else; rejoin if it was released.
@@ -507,11 +508,12 @@ async function main() {
   process.on('SIGINT', shutdown);
 
   // Fixed cadence: each turn starts one interval after the previous one
-  // started, however long the Nessie round-trip took.
+  // started, however long the Nessie round-trip took. If a turn ran over,
+  // wait a full interval from now instead of firing catch-up moves in a burst.
   let turn = 0;
   let next = Date.now();
   const schedule = () => {
-    next += rand(MIN_S * 1000, MAX_S * 1000);
+    next = Math.max(next, Date.now()) + rand(MIN_S * 1000, MAX_S * 1000);
     setTimeout(tick, Math.max(0, next - Date.now()));
   };
 

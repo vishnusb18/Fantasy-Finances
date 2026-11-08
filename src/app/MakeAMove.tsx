@@ -113,7 +113,6 @@ export function MakeAMove({ f, month, involvesPlayer, opponent }: Props) {
   const [preview, setPreview] = useState<MovePreview | null>(null);
   const [previewDraft, setPreviewDraft] = useState("");
   const [operationId, setOperationId] = useState("");
-  const [confirmed, setConfirmed] = useState(false);
   const [busy, setBusy] = useState(false);
   const submitting = useRef(false);
   const pendingKey = `ff:move-pending:${f.data?.playerId}:${f.month}`;
@@ -293,7 +292,6 @@ export function MakeAMove({ f, month, involvesPlayer, opponent }: Props) {
     };
   }, [open, mobile]);
   useEffect(() => {
-    setConfirmed(false);
   }, [draft, fingerprint, involvesPlayer, active]);
   const disabledReason = (action: Move["kind"]) =>
     action === "invest" && !f.result?.score.components.investing.eligible
@@ -310,7 +308,6 @@ export function MakeAMove({ f, month, involvesPlayer, opponent }: Props) {
   const doPreview = () => {
     setError(null);
     setSuccess(null);
-    setConfirmed(false);
     try {
       if (!input || !active)
         throw new Error(
@@ -342,7 +339,7 @@ export function MakeAMove({ f, month, involvesPlayer, opponent }: Props) {
       (!preview && !pendingSubmission) ||
       submitting.current ||
       executionReason ||
-      (!retry && (stale || !confirmed)) ||
+      (!retry && stale) ||
       f.source.kind !== "nessie"
     )
       return;
@@ -350,7 +347,7 @@ export function MakeAMove({ f, month, involvesPlayer, opponent }: Props) {
     setBusy(true);
     setError(null);
     const submission: MoveSubmission = pendingSubmission ?? {
-      confirmed: true,
+      confirmed: true, // clicking Confirm is the player's explicit confirmation
       operationId,
       customerId: f.source.customerId,
       month,
@@ -400,9 +397,8 @@ export function MakeAMove({ f, month, involvesPlayer, opponent }: Props) {
       setRetry(false);
       clearPending();
       setPreview(null);
-      setConfirmed(false);
       setSuccess(
-        `Sandbox move saved and live score published: ${percent(result.efficiencyPct)}.`,
+        `Move saved and live score published: ${percent(result.efficiencyPct)}.`,
       );
       try {
         await f.refreshNessie?.();
@@ -498,7 +494,7 @@ export function MakeAMove({ f, month, involvesPlayer, opponent }: Props) {
                   </p>
                   {pendingSubmission && !preview && (
                     <div className="move-notice" role="status">
-                      Unfinished sandbox move:{" "}
+                      Unfinished move:{" "}
                       {
                         actions.find(
                           (a) => a.kind === pendingSubmission.move.kind,
@@ -514,7 +510,7 @@ export function MakeAMove({ f, month, involvesPlayer, opponent }: Props) {
                         disabled={busy || !!executionReason}
                         onClick={() => void commit()}
                       >
-                        {busy ? "Reconciling…" : "Resume Sandbox Sync"}
+                        {busy ? "Reconciling…" : "Resume"}
                       </button>
                       {executionReason && <p>{executionReason}</p>}
                     </div>
@@ -551,7 +547,6 @@ export function MakeAMove({ f, month, involvesPlayer, opponent }: Props) {
                         onClick={() => {
                           setKind(action.kind);
                           setError(null);
-                          setConfirmed(false);
                         }}
                       >
                         <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -741,7 +736,7 @@ export function MakeAMove({ f, month, involvesPlayer, opponent }: Props) {
                         </div>
                       ) : null}
                       <p className="move-simulation-note">
-                      {pendingSubmission ? "Sandbox submission pending reconciliation — this preview remains hypothetical." : "Simulation only — no changes made."}
+                      {pendingSubmission ? "A move is still being saved — this preview remains hypothetical." : "Simulation only — no changes made."}
                       </p>
                     </section>
                   )}
@@ -751,37 +746,13 @@ export function MakeAMove({ f, month, involvesPlayer, opponent }: Props) {
                         <p className="move-notice">{executionReason}</p>
                       ) : (
                         <>
-                          {!retry && (
-                            <label className="move-confirm">
-                              <input
-                                type="checkbox"
-                                checked={confirmed}
-                                disabled={stale || busy}
-                                onChange={(e) => setConfirmed(e.target.checked)}
-                              />
-                              <span>
-                                I confirm:{" "}
-                                {
-                                  actions.find(
-                                    (a) => a.kind === preview.move.kind,
-                                  )?.title
-                                }{" "}
-                                {formatCents(preview.amountCents)} for{" "}
-                                {f.data?.displayName} in the Nessie sandbox.
-                              </span>
-                            </label>
-                          )}
                           <button
                             type="button"
                             className="move-commit-button"
-                            disabled={busy || (!retry && (stale || !confirmed))}
+                            disabled={busy || (!retry && stale)}
                             onClick={() => void commit()}
                           >
-                            {busy
-                              ? "Confirming…"
-                              : retry
-                                ? "Retry Sandbox Sync"
-                                : "Confirm Sandbox Move"}
+                            {busy ? "Confirming…" : retry ? "Retry" : "Confirm"}
                           </button>
                         </>
                       )}
