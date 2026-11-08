@@ -7,7 +7,7 @@ import {
 } from "node:fs";
 import { join } from "node:path";
 import type { Plugin } from "vite";
-import { DbConnection, tables } from "../src/module_bindings";
+import { openLeagueSession, LeagueSessionError } from "./leagueSession";
 import {
   createNessieClient,
   NessieError,
@@ -158,8 +158,16 @@ export function createMoveExecutor(deps: {
     const player = `nessie:${request.customerId}`;
     const owner = await deps.authorize(token, player, request.month);
     try {
-      if (owner.baseline.playerId !== player || owner.baseline.month !== request.month || owner.baseline.status !== "locked")
-        throw new SandboxError("The official locked baseline is unavailable. Refresh before confirming.", 409, "stale");
+      if (
+        owner.baseline.playerId !== player ||
+        owner.baseline.month !== request.month ||
+        owner.baseline.status !== "locked"
+      )
+        throw new SandboxError(
+          "The official locked baseline is unavailable. Refresh before confirming.",
+          409,
+          "stale",
+        );
       if (!owner.owns())
         throw new SandboxError("You no longer control this player.", 403);
       if (busy.has(player))
@@ -398,92 +406,43 @@ function diskJournal(root: string): MoveJournal {
     },
   };
 }
-function authorizeOwner(
+async function authorizeOwner(
   host: string,
   database: string,
   token: string,
   player: string,
   month: string,
 ): Promise<MoveOwner> {
-  return new Promise((resolve, reject) => {
-    let connection: DbConnection | undefined;
-    const fail = () => {
-      clearTimeout(timer);
-      connection?.disconnect();
-      reject(
-        new SandboxError(
-          "Unable to verify SpacetimeDB ownership. Reconnect and retry.",
-          403,
-        ),
-      );
-    };
-    const timer = setTimeout(fail, 10000);
-    connection = DbConnection.builder()
-      .withUri(host)
-      .withDatabaseName(database)
-      .withToken(token)
-      .onConnect((conn, identity) => {
-        conn
-          .subscriptionBuilder()
-          .onError(fail)
-          .onApplied(() => {
-            try {
-              const owns = () =>
-                conn.isActive &&
-                [...conn.db.leaguePlayer.iter()].some(
-                  (p) => p.playerKey === player && p.owner.isEqual(identity),
-                );
-              const state = [...conn.db.myMonthState.iter()].find(
-                (s) => s.playerKey === player && s.month === month,
-              );
-              if (!owns() || !state) {
-                fail();
-                return;
-              }
-              const baseline = JSON.parse(
-                state.baselineJson,
-              ) as ScoringBaseline;
-              const settings = [...conn.db.myPlayerSettings.iter()].find(
-                (s) => s.playerKey === player,
-              );
-              const overrides = [...conn.db.myCategoryOverride.iter()]
-                .filter((o) => o.playerKey === player)
-                .map((o) => ({
-                  transactionId: o.transactionId,
-                  category: o.category as CategoryOverride["category"],
-                  correctedAt: new Date(
-                    Number(o.correctedAt.microsSinceUnixEpoch / 1000n),
-                  ).toISOString(),
-                }));
-              clearTimeout(timer);
-              resolve({
-                identity: identity.toHexString(),
-                baseline,
-                overrides,
-                confirmations: settings
-                  ? JSON.parse(settings.confirmationsJson)
-                  : {},
-                owns,
-                close: () => conn.disconnect(),
-                publish: async (score) => {
-                  if (!owns()) throw new Error("Control changed");
-                  await conn.reducers.publishScore(publicScoreArgs(score));
-                },
-              });
-            } catch {
-              fail();
-            }
-          })
-          .subscribe([
-            tables.leaguePlayer,
-            tables.myMonthState,
-            tables.myPlayerSettings,
-            tables.myCategoryOverride,
-          ]);
-      })
-      .onConnectError(fail)
-      .build();
-  });
+  let session;
+  try {
+    session = await openLeagueSession(host, database, token, month, player);
+  } catch (e) {
+    throw new SandboxError(
+      e instanceof LeagueSessionError
+        ? e.message
+        : "Unable to verify ownership.",
+      e instanceof LeagueSessionError ? e.status : 403,
+    );
+  }
+  if (!session.baseline || !session.controls()) {
+    session.close();
+    throw new SandboxError(
+      "Connect and lock this player's official baseline before confirming.",
+      403,
+    );
+  }
+  return {
+    identity: session.identity,
+    baseline: session.baseline,
+    overrides: session.overrides,
+    confirmations: session.confirmations,
+    owns: session.controls,
+    close: session.close,
+    publish: async (score) => {
+      if (!session.controls()) throw new Error("Control changed");
+      await session.connection.reducers.publishScore(publicScoreArgs(score));
+    },
+  };
 }
 export function sandboxMovesPlugin(env: Record<string, string>): Plugin {
   return {

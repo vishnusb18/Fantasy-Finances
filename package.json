@@ -17,9 +17,11 @@
     "seed:nessie": "tsx scripts/seed-nessie.ts",
     "smoke": "tsx scripts/smoke-render.tsx",
     "verify:nessie": "tsx scripts/verify-nessie.ts",
+    "verify:coach": "tsx scripts/verify-coach.ts",
     "sim:league": "tsx scripts/sim-league.ts"
   },
   "dependencies": {
+    "@google/genai": "^3.0.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "spacetimedb": "2.14.*"

@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { FinanceState } from "./useFinance";
 import type { ScoringBaseline } from "../lib/finance/types";
 import { financeMonths, financeMonthView } from "./financeMonth";
@@ -8,10 +8,19 @@ import { BudgetSection } from "./BudgetSection";
 import { ProfileSection } from "./ProfileSection";
 import { ScoreSection } from "./ScoreSection";
 import { TransactionsSection } from "./TransactionsSection";
-export function FinancePage({ f }: { f: FinanceState }) {
+export function FinancePage({
+  f,
+  onVisibleMonthChange,
+}: {
+  f: FinanceState;
+  onVisibleMonthChange?: (month: string) => void;
+}) {
   const [selected, setSelected] = useState("");
   const months = financeMonths(f);
   const month = months.includes(selected) ? selected : f.month;
+  useEffect(() => {
+    onVisibleMonthChange?.(month);
+  }, [onVisibleMonthChange, month]);
   const view = useMemo(() => {
     let baseline: ScoringBaseline | undefined;
     try {

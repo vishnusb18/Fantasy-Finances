@@ -182,7 +182,7 @@ export function EntryExperience({
       )}
       {stage !== "landing" && (
         <div ref={app} className="space-app" aria-hidden={stage !== "app"}>
-          <App />
+          <App entered={stage === "app"} />
         </div>
       )}
       {stage === "entering" && (

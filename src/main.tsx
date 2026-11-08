@@ -13,6 +13,7 @@ import './score-columns.css';
 import './animal-avatars.css';
 import './live-league.css';
 import './make-a-move.css';
+import './drifblim-coach.css';
 
 import { SpacetimeRoot } from './app/spacetime';
 

@@ -1,0 +1,6 @@
+Fantasy Finance - Drifblim Gemini coach Codex handoff
+
+1. Extract this folder into the root of your Fantasy Finance repository.
+2. Give Codex: Read drifblim_coach_codex/CODEX_PROMPT.md and implement this feature inside my existing app.
+3. The two exact user-provided shiny pixel sprites are in assets/.
+4. Gemini key is assumed already configured on server; do not expose it to Vite.

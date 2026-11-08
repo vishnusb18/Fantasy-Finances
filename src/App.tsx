@@ -5,8 +5,9 @@ import { FinancePage } from "./app/FinancePage";
 import { Competition } from "./app/Competition";
 import { CloudStatusPill, LiveLeague } from "./app/LiveLeague";
 import { useLiveLeague } from "./app/useLiveLeague";
+import { FloatingShinyDrifblim } from "./app/coach/FloatingShinyDrifblim";
 
-export default function App() {
+export default function App({ entered = true }: { entered?: boolean }) {
   const f = useFinance();
   const live = useLiveLeague(
     f.source.kind === "nessie" && __NESSIE_CONFIGURED__,
@@ -14,6 +15,7 @@ export default function App() {
   );
   const [tab, setTab] = useState("Matchup");
   const [reportMonth, setReportMonth] = useState("");
+  const [coachMonth, setCoachMonth] = useState(f.month);
   useEffect(() => {
     window.scrollTo(0, 0);
     const sidebar = document.querySelector(".sidebar");
@@ -60,6 +62,18 @@ export default function App() {
             </button>
           ))}
         </nav>
+        <FloatingShinyDrifblim
+          ready={entered}
+          scope={{
+            month: coachMonth,
+            source: src.kind,
+            playerKey:
+              src.kind === "nessie"
+                ? `nessie:${src.customerId}`
+                : `seed:${src.persona}-cust`,
+            connected: f.cloudStatus === "ready",
+          }}
+        />
       </aside>
       <div className="app">
         <header className="topbar">
@@ -147,12 +161,15 @@ export default function App() {
             onFinances={() => setTab("My Finances")}
             selectedReportMonth={reportMonth}
             onReportMonthChange={setReportMonth}
+            onVisibleMonthChange={setCoachMonth}
           />
         )}
         {tab === "League" && f.source.kind === "nessie" && (
           <LiveLeague month={f.month} />
         )}
-        {tab === "My Finances" && <FinancePage f={f} />}
+        {tab === "My Finances" && (
+          <FinancePage f={f} onVisibleMonthChange={setCoachMonth} />
+        )}
       </div>
     </div>
   );

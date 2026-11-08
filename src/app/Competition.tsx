@@ -49,6 +49,7 @@ export function Competition({
   selectedReportMonth = "",
   onReportMonthChange,
   live,
+  onVisibleMonthChange,
 }: {
   live?: LiveLeague;
   f: FinanceState;
@@ -56,6 +57,7 @@ export function Competition({
   onFinances: () => void;
   selectedReportMonth?: string;
   onReportMonthChange?: (month: string) => void;
+  onVisibleMonthChange?: (month: string) => void;
 }) {
   const [selectedMonth, setMonth] = useState("");
   const [localReportMonth, setLocalReportMonth] = useState("");
@@ -188,6 +190,9 @@ export function Competition({
     ? reportSelection
     : reportMonths.at(-1)!;
   const report = monthlyReport(league, reportMonth);
+  useEffect(() => {
+    onVisibleMonthChange?.(tab === "Reports" ? reportMonth : month);
+  }, [onVisibleMonthChange, tab, reportMonth, month]);
   if (isLive && !liveReady) {
     const noLeague = !!f.customers && (live?.members.length ?? 0) < 2;
     return (

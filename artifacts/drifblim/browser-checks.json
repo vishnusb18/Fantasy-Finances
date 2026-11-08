@@ -1,0 +1,9 @@
+{
+  "status": "passed",
+  "findings": [
+    "ATM gating, 2-second drift, containment, single flight, focus trap entry/restore, offline retry, session history, month isolation and all-tab integration passed",
+    "Real HTTP endpoint rejects unauthenticated, oversized, wrong-method and foreign-origin requests",
+    "Desktop/tablet/mobile 1440/1000/800/390/320px: no horizontal overflow, usable controls, contained dialog and stationary reduced-motion sprite"
+  ],
+  "consoleErrors": []
+}

@@ -9,6 +9,7 @@ import { calculateEfficiencyScore, type ScoreInput } from "../finance/scoring";
 import { addMonths, monthEnd, previousMonths } from "../finance/util";
 import type { ProviderData } from "../finance/types";
 import { projectMonthEndScore, publicScore, type Matchup } from "./engine";
+import { monthPairings } from "./pairings";
 
 // Financial fixtures, not scoreboard numbers. Each variant has its own income,
 // obligations, spending history, contributions and derived official baseline.
@@ -164,13 +165,10 @@ export function buildLeague(
       };
     }
     // Round-robin rotation with a fixed first member (odd count: last sits out).
-    const ids = members.map((p) => p.key);
-    const rest = ids.slice(1);
-    for (let i = 0; i < index; i++) rest.unshift(rest.pop()!);
-    const order = [ids[0], ...rest].slice(0, ids.length - (ids.length % 2));
-    for (let i = 0; i < order.length / 2; i++) {
-      const a = order[i],
-        b = order[order.length - 1 - i];
+    for (const [i, [a, b]] of monthPairings(
+      members.map((p) => p.key),
+      index,
+    ).entries()) {
       matches.push({
         id: `${month}-${i}`,
         month,
@@ -189,7 +187,9 @@ export function buildLeague(
     // there. Drop months that aren't fully scoreable (never the current month).
     const scoreable = (m: string) =>
       m === currentMonth ||
-      members.every((p) => periods[m][p.key].result.baseline.status === "locked");
+      members.every(
+        (p) => periods[m][p.key].result.baseline.status === "locked",
+      );
     const keep = months.filter(scoreable);
     return {
       months: keep,
