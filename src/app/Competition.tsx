@@ -164,13 +164,7 @@ export function Competition({
           </p>
           <h1>{tab}</h1>
         </div>
-        {tab === "Matchup" ? (
-          <MonthNavigation
-            months={league.months}
-            value={month}
-            onChange={changeMonth}
-          />
-        ) : (
+        {tab !== "Matchup" && (
           <label className="month-picker">
             <select
               aria-label="Competition month"
@@ -249,10 +243,15 @@ export function Competition({
                   active={active}
                 />
               </section>
-              <div className="section-title">
+              <div className="section-title financial-positions-heading">
                 <div>
                   <h2>Financial positions</h2>
                 </div>
+                <MonthNavigation
+                  months={league.months}
+                  value={month}
+                  onChange={changeMonth}
+                />
               </div>
               <PositionRows
                 a={league.periods[month][match.a]}

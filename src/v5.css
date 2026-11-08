@@ -139,13 +139,20 @@
   text-align: center;
   min-width: 145px;
 }
-.ticket,
-.position-ticket {
-  background: #a1cca5;
-  border-color: #a1cca5;
+.ticket {
+  background: linear-gradient(
+    145deg,
+    var(--panel-gold-muted),
+    var(--panel-gold)
+  );
+  border-color: var(--panel-edge);
 }
 .ticket::before {
   background: none;
+}
+.position-ticket {
+  background: #a1cca5;
+  border-color: #a1cca5;
 }
 .ticket .mini-stat {
   background: #fff0c780;
@@ -719,4 +726,13 @@
 }
 .potential-key {
   border-color: #62439f;
+}
+.financial-positions-heading {
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px 24px;
+}
+.financial-positions-heading .month-navigation {
+  margin-left: auto;
 }
