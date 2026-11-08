@@ -1,0 +1,124 @@
+/* Shared arcade surfaces. Ticket silhouettes and bubble effects keep their own styling. */
+:root {
+  --pixel-border: #28153f;
+  --pixel-shadow-accent: #7850ab;
+  --pixel-shadow-dark: #07040e;
+  --pixel-border-width: 3px;
+  --pixel-inner-border-width: 2px;
+  --pixel-radius: 0px;
+  --pixel-offset: 9px;
+  --pixel-panel-shadow:
+    4px 4px 0 var(--pixel-shadow-accent),
+    var(--pixel-offset) var(--pixel-offset) 0 var(--pixel-shadow-dark);
+}
+
+.space-app :is(.card, .race-match, .award-card, .sidebar-league, .position-row),
+.space-app :is(.pixel-card, .pixel-panel) {
+  border: var(--pixel-border-width) solid var(--pixel-border);
+  border-radius: var(--pixel-radius);
+  box-shadow: var(--pixel-panel-shadow);
+}
+
+/* Report awards are panels; the gold and green matchup tickets are excluded. */
+.space-app .award-card {
+  clip-path: none;
+}
+
+/* Inset content gets a crisp outline without a second heavy shadow. */
+.space-app
+  .card
+  :is(
+    .card,
+    .recap-match,
+    .history,
+    .history-item,
+    .financial-summary,
+    .legend-item,
+    .mini-standing,
+    .stat
+  ),
+.space-app .position-detail {
+  border: var(--pixel-inner-border-width) solid var(--pixel-border);
+  border-radius: 0;
+  box-shadow: none;
+}
+.space-app .standings .table td {
+  border-top: var(--pixel-inner-border-width) solid var(--pixel-border);
+  border-bottom: var(--pixel-inner-border-width) solid var(--pixel-border);
+  border-radius: 0;
+}
+.space-app .standings .table td:first-child {
+  border-left: var(--pixel-inner-border-width) solid var(--pixel-border);
+  border-radius: 0;
+}
+.space-app .standings .table td:last-child {
+  border-right: var(--pixel-inner-border-width) solid var(--pixel-border);
+  border-radius: 0;
+}
+.space-app .inline-help p {
+  border: var(--pixel-border-width) solid var(--pixel-border);
+  border-radius: var(--pixel-radius);
+  box-shadow: var(--pixel-panel-shadow);
+}
+
+/* Only interactive standalone panels lift; transforms never move document flow. */
+.space-app :is(.award-card, .position-leader),
+.space-app button.pixel-card {
+  transition:
+    transform 150ms ease,
+    box-shadow 150ms ease;
+}
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .space-app :is(.award-card, .position-leader):hover,
+  .space-app button.pixel-card:hover {
+    transform: translate(-2px, -2px);
+    box-shadow:
+      4px 4px 0 var(--pixel-shadow-accent),
+      11px 11px 0 var(--pixel-shadow-dark);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .space-app :is(.award-card, .position-leader),
+  .space-app button.pixel-card {
+    transform: none;
+    transition: none;
+  }
+}
+
+/* Reserve room for hard shadows in every repeated panel layout. */
+.space-app .current-matchups,
+.space-app .awards-grid,
+.space-app .position-rows,
+.space-app .fin-grid {
+  gap: 24px;
+}
+
+/* Supporting boxes get the same square edges, without nested heavy shadows. */
+.space-app
+  :is(.waterfall, .callout, .inline-help p, .comparison-plot, .dollar-input),
+.space-app .main-nav button,
+.space-app .source .seg,
+.space-app .month-navigation button,
+.space-app :is(select, input, .btn-secondary, .btn-primary) {
+  border-radius: 2px;
+}
+.space-app .position-row {
+  overflow: visible;
+}
+.space-app .position-row .position-detail {
+  border-radius: 0;
+}
+.space-app .card .card {
+  box-shadow: none;
+}
+.space-app .sidebar,
+.space-app .source .seg button.on {
+  box-shadow: none;
+}
+.space-app .main-nav button.active {
+  box-shadow: 3px 3px 0 var(--pixel-shadow-dark);
+}
+.space-app .race-arena,
+.space-app .card .chip {
+  border-radius: 2px;
+}

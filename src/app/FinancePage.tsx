@@ -75,13 +75,10 @@ export function FinancePage({ f }: { f: FinanceState }) {
             <span>Private</span>
           </div>
           <ContributionPie f={view} />
+          <ScoreSection f={view} />
           <div className="grid finance-foundation">
             <div className="col">
               <BudgetSection f={view} />
-              <details className="card score-transparency">
-                <summary>How scoring works</summary>
-                <ScoreSection f={view} />
-              </details>
             </div>
             <div className="col">
               <ProfileSection f={view} />

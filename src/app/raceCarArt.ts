@@ -28,7 +28,7 @@ export const raceCarArt = (
  <path d="M75 37 L76 55 M97 37 L97 55 M75 37 Q88 28 97 37" fill="none" stroke="#efb844" stroke-width="4" stroke-linecap="round"/>
  <!-- Racing number / sponsor plate -->
  <rect x="107" y="35" width="20" height="24" rx="8" fill="#fff2c5"/>
- <text x="117" y="51" text-anchor="middle" font-family="Pixelify Sans,system-ui,sans-serif" font-weight="700" font-size="12" fill="var(--type-on-card, #321c58)">${number}</text>
+ <text class="numeric" x="117" y="51" text-anchor="middle" font-family="Pixelify Sans,system-ui,sans-serif" font-weight="500" font-size="12" fill="var(--type-on-card, #321c58)">${number}</text>
  <!-- Front wing, prominent endplates / splitter -->
  <path d="M155 27 Q164 35 177 35 L177 59 Q164 59 155 67 L151 56 L151 38Z" fill="#ffe590" stroke="#fff8d2" stroke-width="2.5"/>
  <path d="M157 32 L171 40 M157 62 L171 54" stroke="#7343a4" stroke-width="2"/>

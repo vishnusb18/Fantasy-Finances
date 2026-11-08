@@ -3,11 +3,14 @@ import { createRoot } from 'react-dom/client';
 import { EntryExperience } from './app/EntryExperience';
 import './styles.css';
 import './purple-gold.css';
-import './inter.css';
 import './arcade-fonts.css';
 import './v5.css';
 import './space.css';
+import './pixel-panels.css';
 import './typography.css';
+import './achievements.css';
+import './score-columns.css';
+import './animal-avatars.css';
 
 // MVP (option A): the app runs entirely in the browser. The SpacetimeDB
 // connection from the template is intentionally not mounted yet; the generated

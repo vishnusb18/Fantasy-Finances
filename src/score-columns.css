@@ -1,0 +1,157 @@
+/* The original earned/available series on a vertical, shared completion scale. */
+.score-card .score-hero {
+  grid-template-columns: 170px minmax(0, 1fr);
+  align-items: center;
+  gap: 28px;
+}
+.score-column-chart {
+  --column-plot-height: 180px;
+  position: relative;
+  container-type: inline-size;
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr);
+  gap: 10px;
+  width: 100%;
+  min-width: 0;
+}
+.score-column-scale {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-end;
+  height: var(--column-plot-height);
+  margin-top: 32px;
+  font-family: var(--font-numeric);
+  font-size: 12px;
+  font-weight: var(--numeric-weight);
+  line-height: 1;
+}
+.score-columns {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+  min-width: 0;
+}
+.score-column {
+  display: grid;
+  grid-template-rows: 32px var(--column-plot-height) auto;
+  align-content: start;
+  min-width: 0;
+}
+.score-column-value.numeric {
+  align-self: center;
+  text-align: center;
+  white-space: nowrap;
+  font-size: 14px;
+  line-height: 1.2;
+}
+.score-column-value small {
+  font-size: 12px;
+}
+.score-column-chart .score-column-plot,
+.score-column-chart .score-column-plot:hover,
+.score-column-chart .score-column-plot:active {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  width: 100%;
+  height: var(--column-plot-height);
+  padding: 0;
+  border: 0;
+  border-bottom: 3px solid var(--type-on-card);
+  border-radius: 0;
+  background: repeating-linear-gradient(
+    to top,
+    #321c5820 0 1px,
+    transparent 1px 50%
+  );
+  box-shadow: none;
+  transform: none;
+  cursor: help;
+}
+.score-column-fill {
+  display: block;
+  width: 65%;
+  max-width: 72px;
+  border: 2px solid #4f306e;
+  border-top: 4px solid var(--type-gold);
+  background: linear-gradient(90deg, #6f4d8f 0 75%, #9673af 75%);
+  box-sizing: border-box;
+}
+.score-column.ineligible .score-column-plot {
+  background: repeating-linear-gradient(
+    135deg,
+    #321c580c 0 3px,
+    transparent 3px 7px
+  );
+}
+.column-unscored {
+  align-self: center;
+  color: #65437e;
+}
+.score-column-label {
+  display: block;
+  padding-top: 10px;
+  font-size: 12px;
+  line-height: 1.4;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+.column-short-label {
+  display: none;
+}
+.column-tooltip {
+  position: absolute;
+  z-index: 8;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: 100%;
+  padding: 8px 10px;
+  border: 2px solid var(--pixel-border);
+  background: #fff0c7;
+  color: var(--type-on-card);
+  box-shadow: 3px 3px 0 var(--pixel-shadow-accent);
+  font-size: 12px;
+  line-height: 1.4;
+  visibility: hidden;
+  pointer-events: none;
+}
+.score-column:hover .column-tooltip,
+.score-column:focus-within .column-tooltip {
+  visibility: visible;
+}
+.score-explanation {
+  margin-top: 20px;
+}
+@container (max-width: 480px) {
+  .score-columns {
+    gap: 6px;
+  }
+  .score-column-value.numeric {
+    font-size: 12px;
+  }
+  .score-column-value small {
+    display: block;
+  }
+  .column-full-label {
+    display: none;
+  }
+  .column-short-label {
+    display: inline;
+  }
+}
+@media (max-width: 650px) {
+  .score-card .score-hero {
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: center;
+    gap: 22px;
+  }
+  .score-column-chart {
+    --column-plot-height: 150px;
+    grid-template-columns: 28px minmax(0, 1fr);
+    gap: 6px;
+  }
+}

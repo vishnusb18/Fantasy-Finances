@@ -28,12 +28,13 @@ import {
 } from "./competitionIdentity";
 import { MatchupTicket, PositionTicket } from "./MatchupTickets";
 import { MirroredRaceMatchups } from "./RaceMatchups";
-import { MonthNavigation } from "./MonthNavigation";
+import { ArrowNavigation, MonthNavigation } from "./MonthNavigation";
 import {
   PotentialComparison,
   defensiblePotential,
 } from "./PotentialComparison";
 import { rankMovement } from "../lib/competition/presentation";
+import { AchievementIcon } from "./AchievementIcon";
 const pct = (n: number | null | undefined) => (n == null ? "—" : n.toFixed(1));
 const monthName = (m: string) =>
   new Date(`${m}-02T12:00:00`).toLocaleDateString("en-US", {
@@ -44,12 +45,17 @@ export function Competition({
   f,
   tab,
   onFinances,
+  selectedReportMonth = "",
+  onReportMonthChange,
 }: {
   f: FinanceState;
   tab: string;
   onFinances: () => void;
+  selectedReportMonth?: string;
+  onReportMonthChange?: (month: string) => void;
 }) {
   const [selectedMonth, setMonth] = useState("");
+  const [localReportMonth, setLocalReportMonth] = useState("");
   const [animatePeriod, setAnimatePeriod] = useState(false);
   const changeMonth = (month: string) => {
     setMonth(month);
@@ -136,7 +142,13 @@ export function Competition({
           league.matches.filter((m) => m.month < latestFinal),
         )
       : [];
-  const reportMonth = active ? league.months.at(-2)! : month;
+  const reportMonths = league.months.filter((m) => m !== f.month);
+  const reportSelection = onReportMonthChange
+    ? selectedReportMonth
+    : localReportMonth;
+  const reportMonth = reportMonths.includes(reportSelection)
+    ? reportSelection
+    : reportMonths.at(-1)!;
   const report = monthlyReport(league, reportMonth);
   if (f.source.kind === "nessie")
     return (
@@ -164,20 +176,26 @@ export function Competition({
           </p>
           <h1>{tab}</h1>
         </div>
-        {tab !== "Matchup" && (
+        {tab === "Reports" && (
+          <MonthNavigation
+            months={reportMonths}
+            value={reportMonth}
+            onChange={onReportMonthChange ?? setLocalReportMonth}
+            ariaLabel="Report month"
+          />
+        )}
+        {tab === "League" && (
           <label className="month-picker">
             <select
               aria-label="Competition month"
-              value={tab === "Reports" ? reportMonth : month}
+              value={month}
               onChange={(e) => changeMonth(e.target.value)}
             >
-              {league.months
-                .filter((m) => tab !== "Reports" || m !== f.month)
-                .map((m) => (
-                  <option key={m} value={m}>
-                    {monthName(m)}
-                  </option>
-                ))}
+              {league.months.map((m) => (
+                <option key={m} value={m}>
+                  {monthName(m)}
+                </option>
+              ))}
             </select>
           </label>
         )}
@@ -191,17 +209,17 @@ export function Competition({
                   <i />
                   {active ? "Provisional" : "Final"}
                 </span>
-                <select
-                  aria-label="Select matchup"
+                <ArrowNavigation
+                  ariaLabel="Matchup selection"
+                  unit="matchup"
+                  className="matchup-navigation"
                   value={match.id}
-                  onChange={(e) => setMatchId(e.target.value)}
-                >
-                  {monthMatches.map((m) => (
-                    <option key={m.id} value={m.id}>
-                      {name(m.a)} vs {name(m.b)}
-                    </option>
-                  ))}
-                </select>
+                  onChange={setMatchId}
+                  options={monthMatches.map((m) => ({
+                    value: m.id,
+                    label: `${name(m.a)} vs ${name(m.b)}`,
+                  }))}
+                />
               </div>
               <section className="matchup-hero">
                 <div className="competitors">
@@ -347,10 +365,12 @@ export function Competition({
                           </span>
                         </button>
                       </td>
-                      <td>
+                      <td className="numeric">
                         {r.wins}–{r.losses}–{r.ties}
                       </td>
-                      <td className={r.streak.endsWith("W") ? "positive" : ""}>
+                      <td
+                        className={`numeric ${r.streak.endsWith("W") ? "positive" : ""}`}
+                      >
                         {r.streak}
                       </td>
                       <td className="num">{r.pointsFor.toFixed(1)}</td>
@@ -406,25 +426,22 @@ export function Competition({
                     report.players.find((p) => p.id === a.id)!,
                   ) !== null,
               )
-              .map((a, i) => (
+              .map((a) => (
                 <button
-                  className="award-card"
+                  className="award-card achievement-card"
                   key={a.title}
                   onClick={() => setMember(a.id)}
                   title={a.why}
                   aria-label={`${a.title}: ${name(a.id)}, ${a.value}. ${a.why}`}
                 >
-                  <div>
-                    <span className="award-icon">
-                      {["♜", "◇", "↗", "◎", "↑", "◈"][i]}
-                    </span>
+                  <div className="achievement-header">
+                    <AchievementIcon title={a.title} />
                     <p className="eyebrow">{a.title}</p>
                   </div>
                   <div className="award-person">
                     <Avatar id={a.id} />
                     <span>
                       <strong>{name(a.id)}</strong>
-                      <small>{team(a.id)}</small>
                     </span>
                     <b>{a.value}</b>
                   </div>
@@ -445,11 +462,15 @@ export function Competition({
                       {name(report.margins[0].match.a)} vs{" "}
                       {name(report.margins[0].match.b)}
                     </strong>
-                    <small>{pct(report.margins[0].margin)} pts apart</small>
+                    <small className="numeric">
+                      {pct(report.margins[0].margin)} pts apart
+                    </small>
                   </p>
                   <p>
                     <span>Largest margin</span>
-                    <strong>{pct(report.margins.at(-1)!.margin)} pts</strong>
+                    <strong className="numeric">
+                      {pct(report.margins.at(-1)!.margin)} pts
+                    </strong>
                   </p>
                 </>
               )}
@@ -457,7 +478,7 @@ export function Competition({
                 <p>
                   <span>Highest efficiency in a loss</span>
                   <strong>{name(report.losers[0])}</strong>
-                  <small>
+                  <small className="numeric">
                     {pct(
                       league.periods[reportMonth][report.losers[0]].result.score
                         .efficiencyPct,
@@ -466,32 +487,6 @@ export function Competition({
                   </small>
                 </p>
               )}
-            </div>
-          </section>
-          <section>
-            <div className="section-title">
-              <div>
-                <h2>Position leaders</h2>
-              </div>
-            </div>
-            <div className="position-leaders">
-              {report.categoryLeaders.map((l) => (
-                <button
-                  className="position-leader"
-                  key={l.position.key}
-                  onClick={() => setMember(l.id)}
-                >
-                  <p className="eyebrow">{label(l.position.key)}</p>
-                  <Avatar id={l.id} />
-                  <strong>{name(l.id)}</strong>
-                  <b>
-                    {pct((l.position.earned / l.position.available) * 100)}%
-                  </b>
-                  <small>
-                    {pct(l.position.earned)} / {pct(l.position.available)} pts
-                  </small>
-                </button>
-              ))}
             </div>
           </section>
           <PotentialComparison report={report} onMember={setMember} />
@@ -521,13 +516,13 @@ export function Competition({
             <Avatar id={member} />
             <h2>{name(member)}</h2>
             <p className="sub">{team(member)} · Public</p>
-            <p>
+            <p className="numeric">
               {record.find((r) => r.id === member)?.wins} wins ·{" "}
               {record.find((r) => r.id === member)?.losses} losses
             </p>
             {league.months.map((m) => (
               <details key={m}>
-                <summary>
+                <summary className="numeric">
                   {monthName(m)} ·{" "}
                   {pct(league.periods[m][member].result.score.efficiencyPct)}%{" "}
                   {m === f.month ? "provisional" : "final"}
@@ -635,7 +630,12 @@ function PositionRows({
             <summary>
               <div className="position-heading">
                 <h3>{label(l.key)}</h3>
-                <span>POSITION {String(i + 1).padStart(2, "0")}</span>
+                <span>
+                  POSITION{" "}
+                  <span className="numeric">
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                </span>
               </div>
               <div className="position-tickets">
                 <PositionTicket
@@ -758,7 +758,7 @@ function MatchCards({ league, month }: { league: DemoLeague; month: string }) {
                           : "Final"}
                   </small>
                 </span>
-                <b>
+                <b className="numeric">
                   {pct(m.scores[id].efficiency)}
                   <small>/ 100</small>
                 </b>

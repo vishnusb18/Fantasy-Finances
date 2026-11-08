@@ -17,13 +17,29 @@ export const positionLabel = (key: string) =>
   ({ bills: "Bills & debt", savings: "Savings", investing: "Investing" })[
     key
   ] ?? categoryLabel(key);
+const playerAnimals: Record<string, string> = {
+  maya: "fox",
+  jordan: "deer",
+  alex: "chicken",
+  sam: "bear",
+  riley: "cow",
+  avery: "giraffe",
+};
 export function Avatar({ id }: { id: string }) {
+  const animal = playerAnimals[id] ?? "fox";
   return (
-    <span className="avatar">
-      {playerName(id)
-        .split(" ")
-        .map((n) => n[0])
-        .join("")}
+    <span
+      className="avatar animal-avatar"
+      role="img"
+      aria-label={`${animal} avatar`}
+    >
+      <img
+        src={`/images/avatars/${animal}.svg`}
+        alt=""
+        width={24}
+        height={24}
+        draggable={false}
+      />
     </span>
   );
 }

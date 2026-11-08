@@ -7,6 +7,7 @@ import { Competition } from "./app/Competition";
 export default function App() {
   const f = useFinance();
   const [tab, setTab] = useState("Matchup");
+  const [reportMonth, setReportMonth] = useState("");
   useEffect(() => {
     window.scrollTo(0, 0);
     const sidebar = document.querySelector(".sidebar");
@@ -140,6 +141,8 @@ export default function App() {
             f={f}
             tab={tab}
             onFinances={() => setTab("My Finances")}
+            selectedReportMonth={reportMonth}
+            onReportMonthChange={setReportMonth}
           />
         )}
         {tab === "My Finances" && <FinancePage f={f} />}

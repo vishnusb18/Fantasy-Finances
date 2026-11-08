@@ -12,6 +12,49 @@ export function adjacentMonth(
     next = index + direction;
   return index >= 0 && next >= 0 && next < months.length ? months[next] : null;
 }
+export function ArrowNavigation({
+  options,
+  value,
+  onChange,
+  ariaLabel,
+  unit = "month",
+  className = "",
+}: {
+  options: { value: string; label: string }[];
+  value: string;
+  onChange: (value: string) => void;
+  ariaLabel: string;
+  unit?: "month" | "matchup";
+  className?: string;
+}) {
+  const values = options.map((option) => option.value);
+  const prev = adjacentMonth(values, value, -1),
+    next = adjacentMonth(values, value, 1);
+  return (
+    <nav className={`month-navigation ${className}`} aria-label={ariaLabel}>
+      <button
+        type="button"
+        aria-label={`Previous ${unit}`}
+        disabled={!prev}
+        onClick={() => prev && onChange(prev)}
+      >
+        ←
+      </button>
+      <span className="month-title" aria-live="polite" aria-atomic="true">
+        {options.find((option) => option.value === value)?.label}
+      </span>
+      <button
+        type="button"
+        aria-label={`Next ${unit}`}
+        disabled={!next}
+        onClick={() => next && onChange(next)}
+      >
+        →
+      </button>
+    </nav>
+  );
+}
+
 export function MonthNavigation({
   months,
   value,
@@ -23,29 +66,15 @@ export function MonthNavigation({
   onChange: (month: string) => void;
   ariaLabel?: string;
 }) {
-  const prev = adjacentMonth(months, value, -1),
-    next = adjacentMonth(months, value, 1);
   return (
-    <nav className="month-navigation" aria-label={ariaLabel}>
-      <button
-        type="button"
-        aria-label="Previous month"
-        disabled={!prev}
-        onClick={() => prev && onChange(prev)}
-      >
-        ←
-      </button>
-      <span className="month-title" aria-live="polite" aria-atomic="true">
-        {monthTitle(value)}
-      </span>
-      <button
-        type="button"
-        aria-label="Next month"
-        disabled={!next}
-        onClick={() => next && onChange(next)}
-      >
-        →
-      </button>
-    </nav>
+    <ArrowNavigation
+      options={months.map((month) => ({
+        value: month,
+        label: monthTitle(month),
+      }))}
+      value={value}
+      onChange={onChange}
+      ariaLabel={ariaLabel}
+    />
   );
 }

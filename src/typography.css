@@ -1,9 +1,14 @@
 /* Canonical font roles and arcade text palette. Geometry and animation stay in the existing themes. */
 :root {
   --font-ui: "Pixelify Sans", system-ui, sans-serif;
-  --font-arcade: "Press Start 2P", "Pixelify Sans", monospace;
-  --font-data: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-numbers: var(--font-ui);
+  --font-arcade: var(--font-ui);
+  --font-data: var(--font-ui);
+  --font-numeric: var(--font-ui);
+  --font-numbers: var(--font-numeric);
+  --numeric-weight: 500;
+  --numeric-leading: 1.4;
+  --numeric-tracking: 0.02em;
+  --numeric-min-size: 12px;
   --type-purple: #b78cff;
   --type-highlight: #d6b8ff;
   --type-on-card: #321c58;
@@ -20,6 +25,12 @@ button,
 select,
 input,
 textarea {
+  font-family: var(--font-ui);
+}
+code,
+pre,
+kbd,
+samp {
   font-family: var(--font-ui);
 }
 h1,
@@ -51,6 +62,9 @@ h6,
 .sidebar .brand h1 {
   color: var(--type-purple);
   letter-spacing: 0;
+}
+.sidebar .brand h1 {
+  font-size: 20px;
 }
 .space-app .main-nav button {
   color: var(--type-on-dark);
@@ -148,7 +162,7 @@ summary:focus-visible {
 .atm-play-hotspot:focus-visible {
   outline-color: var(--type-purple);
 }
-/* Press Start is reserved for short, featured arcade labels. PLAY remains the original image artwork. */
+/* All arcade labels use Pixelify. PLAY remains the original image artwork. */
 .atm-play-hotspot,
 .award-card .eyebrow,
 .versus,
@@ -158,18 +172,19 @@ summary:focus-visible {
   letter-spacing: 0;
 }
 .award-card .eyebrow {
-  font-size: 8px;
+  font-size: 12px;
+  font-weight: 600;
   line-height: 1.8;
   overflow-wrap: anywhere;
   color: var(--type-on-card);
 }
 .versus {
-  font-size: 11px;
+  font-size: 16px;
 }
 .position-between > strong {
-  font-size: 9px;
+  font-size: 12px;
 }
-/* Inter remains for dense explanatory prose and transaction descriptions. */
+/* Dense prose shares the same Pixelify family as the rest of the interface. */
 .table,
 .history-item,
 .activity-explanation,
@@ -184,7 +199,13 @@ summary:focus-visible {
 .fineprint {
   font-family: var(--font-data);
 }
-/* All numeric displays and inputs now share the app's Pixelify face. */
+/* Medium weight keeps counters open; positive tracking separates pixel digits. */
+.numeric,
+.month-title,
+.month-picker select,
+.race-head .chip,
+.position-between small,
+.position-rail span,
 .financial-summary,
 .financial-summary > .chip,
 .match-verdict strong:last-child,
@@ -194,7 +215,6 @@ input[type="number"],
 .table .num,
 .table .rank,
 .table tbody td:first-child,
-.table tbody td:nth-child(n + 3),
 .history-item > div > span,
 .history-item p,
 .big-score,
@@ -227,6 +247,69 @@ input[type="number"],
 .mini-standing > small {
   font-family: var(--font-numbers);
   font-variant-numeric: tabular-nums;
+  font-weight: var(--numeric-weight);
+  line-height: var(--numeric-leading);
+  letter-spacing: var(--numeric-tracking);
+}
+.numeric,
+.money,
+.points,
+.score-num,
+.stat-value,
+.table .num,
+.table .rank,
+.award-person > b,
+.position-leader > b,
+.recap-match b {
+  font-weight: var(--numeric-weight);
+  letter-spacing: var(--numeric-tracking);
+}
+/* Financial metadata must not shrink into the old 7–10px mobile styles. */
+.numeric,
+.table .num,
+.table tbody td:first-child,
+.table input,
+.money,
+.comp-pts,
+.score-sub,
+.budget-official,
+.budget-actual,
+.comparison-labels,
+.chart-axis,
+.race-meter span,
+.race-projections,
+.race-caption,
+.race-head .chip,
+.position-between small,
+.history-item > div > span,
+.financial-summary p,
+.ticket .mini-stat > strong,
+.ticket .scoreline .sub,
+.position-ticket .ticket-rate,
+.position-ticket .position-projected,
+.position-ticket .points small,
+.position-leader > small,
+.pie-legend .legend-item small,
+.pie-legend .legend-item > .chip,
+.financial-summary > .chip,
+.mini-standing > small {
+  font-size: var(--numeric-min-size);
+}
+.financial-summary strong,
+.financial-summary strong small,
+.position-ticket .points small,
+.race-meter strong,
+.recap-match b,
+.recap-match b small {
+  font-weight: var(--numeric-weight);
+  letter-spacing: var(--numeric-tracking);
+}
+.recap-match b {
+  font-size: 20px;
+}
+.financial-summary strong small,
+.recap-match b small {
+  font-size: var(--numeric-min-size);
 }
 .table th,
 .table .manager-button,
@@ -254,18 +337,18 @@ input[type="number"],
 .ticket.away .big-score {
   font-family: var(--font-numbers);
   font-size: var(--matchup-actual-size);
-  font-weight: 700;
-  line-height: 1.1;
-  letter-spacing: 0;
+  font-weight: var(--numeric-weight);
+  line-height: 1.2;
+  letter-spacing: var(--numeric-tracking);
   color: var(--type-on-card);
   white-space: nowrap;
 }
 .ticket .expected-score > strong {
   font-family: var(--font-numbers);
   font-size: var(--matchup-projected-size);
-  font-weight: 700;
-  line-height: 1.1;
-  letter-spacing: 0;
+  font-weight: var(--numeric-weight);
+  line-height: 1.2;
+  letter-spacing: var(--numeric-tracking);
   color: var(--type-on-card);
   white-space: nowrap;
 }
@@ -273,9 +356,9 @@ input[type="number"],
 .ticket .expected-score > strong > small {
   font-family: var(--font-numbers);
   font-size: var(--matchup-unit-size);
-  font-weight: 700;
-  letter-spacing: 0;
-  line-height: 1;
+  font-weight: var(--numeric-weight);
+  letter-spacing: var(--numeric-tracking);
+  line-height: 1.2;
   color: var(--type-on-card);
 }
 .ticket .score-phase,
@@ -322,8 +405,11 @@ input[type="number"],
   font-size: 12px;
 }
 @media (max-width: 650px) {
+  .sidebar .brand h1 {
+    font-size: 19px;
+  }
   .award-card .eyebrow {
-    font-size: 7px;
+    font-size: 11px;
     line-height: 1.8;
   }
   .main-nav button {
@@ -342,7 +428,7 @@ input[type="number"],
     font-size: 11px;
   }
   .position-between > strong {
-    font-size: 8px;
+    font-size: 12px;
   }
 }
 .atm-play-hotspot:focus-visible {

@@ -1,0 +1,16 @@
+/* Transparent pixel heads share existing avatar dimensions in every context. */
+.space-app .animal-avatar {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.animal-avatar img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  image-rendering: pixelated;
+  user-select: none;
+}

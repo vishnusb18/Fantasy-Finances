@@ -1,16 +1,8 @@
 import { categoryLabel } from "../lib/finance/scoring";
-import type { ComponentKey } from "../lib/finance/types";
 import { formatCents, round1 } from "../lib/finance/util";
 import type { FinanceState } from "./useFinance";
-import { Bar, Card, Chip } from "./ui";
-
-const COMPONENT_LABEL: Record<ComponentKey, string> = {
-  spending: "Discretionary spending",
-  savings: "Savings progress",
-  bills: "Bills & debt",
-  investing: "Investing consistency",
-  optimization: "Financial optimization",
-};
+import { Card, Chip } from "./ui";
+import { ScoreColumns } from "./ScoreColumns";
 
 export function ScoreSection({ f }: { f: FinanceState }) {
   const s = f.result!.score;
@@ -23,7 +15,7 @@ export function ScoreSection({ f }: { f: FinanceState }) {
       title="Efficiency score"
       actions={
         <Chip tone={s.status === "final" ? "good" : "info"}>
-          {s.status === "final" ? "Final" : `Provisional · as of ${s.asOf}`}
+          {s.status === "final" ? "Final" : "Provisional"}
         </Chip>
       }
       className="score-card"
@@ -38,42 +30,11 @@ export function ScoreSection({ f }: { f: FinanceState }) {
             {round1(s.earnedPoints)} / {s.availablePoints} pts
           </div>
         </div>
-        <ul className="components">
-          {(Object.keys(s.components) as ComponentKey[]).map((k) => {
-            const c = s.components[k];
-            return (
-              <li key={k} className={c.eligible ? "" : "ineligible"}>
-                <div className="comp-head">
-                  <span>{COMPONENT_LABEL[k]}</span>
-                  <span className="comp-pts">
-                    {c.eligible
-                      ? `${round1(c.earned)} / ${round1(c.available)}`
-                      : "Not scored"}
-                  </span>
-                </div>
-                {c.eligible ? (
-                  <Bar
-                    value={c.earned}
-                    max={c.available}
-                    tone={
-                      c.earned / c.available >= 0.8
-                        ? "good"
-                        : c.earned / c.available >= 0.5
-                          ? "warn"
-                          : "bad"
-                    }
-                  />
-                ) : (
-                  <p className="hint">{c.explanations[0]}</p>
-                )}
-              </li>
-            );
-          })}
-        </ul>
+        <ScoreColumns components={s.components} />
       </div>
 
-      <div className="why">
-        <h3>Why this score</h3>
+      <details className="notes score-explanation">
+        <summary>Score details</summary>
         <ul>
           {s.explanations.map((e, i) => (
             <li key={i}>{e}</li>
@@ -89,7 +50,7 @@ export function ScoreSection({ f }: { f: FinanceState }) {
             </ul>
           </>
         )}
-      </div>
+      </details>
 
       {s.categoryLines.length > 0 && (
         <details className="notes">
@@ -128,10 +89,6 @@ export function ScoreSection({ f }: { f: FinanceState }) {
               ))}
             </tbody>
           </table>
-          <p className="hint">
-            35 spending points use fixed category weights and the overall cap.
-            Pending purchases affect projections only.
-          </p>
         </details>
       )}
     </Card>

@@ -96,11 +96,9 @@ export function PotentialComparison({
       <details className="chart-help">
         <summary>Potential methodology</summary>
         <p>
-          Hypothetical contributions after bills, reserves and existing
-          savings/investing, within remaining monthly capacity. No double
-          counting or market returns. Official results stay fixed. Unavailable
-          means the existing model lacks sufficient data or exceeds these
-          constraints. Sample cash balances are snapshots.
+          Feasible contributions after bills and reserves, within monthly
+          capacity. No double counting or market gains. Official scores stay
+          fixed. Unavailable when data or capacity is insufficient.
         </p>
       </details>
     </section>

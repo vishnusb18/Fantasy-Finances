@@ -96,6 +96,53 @@ body {
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
 }
+.atm-play-gold {
+  position: absolute;
+  pointer-events: none;
+  background-repeat: no-repeat;
+  /* Retain the original pixel artwork and bevels, tinting only PLAY to app gold. */
+  filter: sepia(1) saturate(2.2) brightness(1.45);
+  clip-path: polygon(
+    0 15%,
+    3% 15%,
+    3% 8%,
+    6% 8%,
+    6% 0,
+    94% 0,
+    94% 8%,
+    97% 8%,
+    97% 15%,
+    100% 15%,
+    100% 85%,
+    97% 85%,
+    97% 92%,
+    94% 92%,
+    94% 100%,
+    6% 100%,
+    6% 92%,
+    3% 92%,
+    3% 85%,
+    0 85%
+  );
+}
+.landing-brand {
+  position: absolute;
+  top: clamp(16px, 2vw, 32px);
+  left: clamp(16px, 2vw, 32px);
+  z-index: 2;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  transition: opacity 180ms ease;
+}
+.landing-brand .brand-logo {
+  display: block;
+  width: clamp(64px, 7vw, 96px);
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+}
+.is-entering .landing-brand {
+  opacity: 0;
+}
 .atm-play-hotspot:hover,
 .atm-play-hotspot:active {
   background: transparent;

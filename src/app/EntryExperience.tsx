@@ -93,6 +93,16 @@ export function EntryExperience({
           aria-label="Fantasy Finance entrance"
           aria-busy={(!image.ready && !image.failed) || stage === "entering"}
         >
+          <div className="landing-brand">
+            <span className="brand-logo">
+              <img
+                src="/images/brand-logo.png"
+                alt="Fantasy Finance"
+                width={1536}
+                height={1024}
+              />
+            </span>
+          </div>
           <div
             className="atm-ambient"
             style={{ backgroundImage: `url("${imageSrc}")` }}
@@ -102,7 +112,7 @@ export function EntryExperience({
             <img
               className="atm-reference"
               src={imageSrc}
-              alt="A metallic ATM with a starfield display and a red pixelated PLAY button"
+              alt="A metallic ATM with a starfield display"
               draggable={false}
               fetchPriority="high"
               onLoad={(e) =>
@@ -116,6 +126,19 @@ export function EntryExperience({
               onError={() =>
                 setImage((current) => ({ ...current, failed: true }))
               }
+            />
+            <div
+              className="atm-play-gold"
+              aria-hidden="true"
+              style={{
+                left: `${play.x * 100}%`,
+                top: `${play.y * 100}%`,
+                width: `${play.width * 100}%`,
+                height: `${play.height * 100}%`,
+                backgroundImage: `url("${imageSrc}")`,
+                backgroundSize: `${geometry.width}px ${geometry.height}px`,
+                backgroundPosition: `${-play.x * geometry.width}px ${-play.y * geometry.height}px`,
+              }}
             />
             {stage === "entering" && (
               <div

@@ -109,6 +109,22 @@
   gap: 14px;
   flex-shrink: 0;
 }
+.section-top {
+  flex-wrap: wrap;
+}
+.section-top .matchup-navigation {
+  margin-left: auto;
+  width: min(100%, 430px);
+  gap: 8px;
+}
+.matchup-navigation .month-title {
+  flex: 1;
+  min-width: 0;
+  text-align: center;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  font-size: 14px;
+}
 .month-navigation button {
   display: grid;
   place-items: center;
