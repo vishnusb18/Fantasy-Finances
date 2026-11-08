@@ -71,8 +71,11 @@ export function createNessieClient({ baseUrl, apiKey, fetchImpl = fetch }: Nessi
     put,
     listCustomers: () => get<NessieCustomer[]>('/customers'),
 
-    /** Pull everything we score for one customer. */
-    async fetchBundle(customerId: string): Promise<NessieBundle> {
+    /**
+     * Pull everything we score for one customer. Pass `merchants` (from one
+     * GET /merchants) to skip looking each merchant up individually.
+     */
+    async fetchBundle(customerId: string, opts: { merchants?: NessieMerchant[] } = {}): Promise<NessieBundle> {
       const [customer, accounts] = await Promise.all([
         get<NessieCustomer>(`/customers/${customerId}`),
         get<NessieAccount[]>(`/customers/${customerId}/accounts`),
@@ -101,8 +104,11 @@ export function createNessieClient({ baseUrl, apiKey, fetchImpl = fetch }: Nessi
       );
       const purchases = perAccount.flatMap(x => x.purchases);
       const merchantIds = [...new Set(purchases.map(p => p.merchant_id).filter(Boolean))];
+      const known = new Map((opts.merchants ?? []).map(m => [m._id, m]));
       const merchants = (
-        await Promise.all(merchantIds.map(id => get<NessieMerchant>(`/merchants/${id}`).catch(() => null)))
+        await Promise.all(
+          merchantIds.map(id => known.get(id) ?? get<NessieMerchant>(`/merchants/${id}`).catch(() => null))
+        )
       ).filter((m): m is NessieMerchant => !!m && !Array.isArray(m));
       // A transfer appears under both accounts; dedupe by id.
       const transfers = [...new Map(perAccount.flatMap(x => x.transfers).map(t => [t._id, t])).values()];

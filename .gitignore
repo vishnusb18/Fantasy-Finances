@@ -16,3 +16,6 @@ spacetime.local.json
 
 # League simulator bot identities
 scripts/.sim-tokens.json
+
+# Dev-server league data cache (Nessie sandbox data)
+.cache/

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { timestampToIso, useCloud, type Cloud } from "./spacetime";
 import { publicScoreArgs } from "../lib/league/publish";
+import { fetchLeague, LEAGUE_STALE_MS } from "./leagueApi";
 import { createNessieClient } from "../lib/finance/adapters/nessie/client";
 import type { NessieCustomer } from "../lib/finance/adapters/nessie/types";
 import { nessieToProviderData } from "../lib/finance/adapters/nessie/toProviderData";
@@ -63,6 +64,17 @@ const localToday = () => {
 
 export const nessie = createNessieClient({ baseUrl: "/nessie" });
 
+/**
+ * The selected customer's Nessie data, through the dev server's cached league
+ * endpoint — the same copy the league uses, so it's fetched once, not twice.
+ */
+async function loadOwnBundle(customerId: string, maxAgeMs: number) {
+  const res = await fetchLeague({ ids: [customerId], maxAgeMs });
+  const bundle = res.bundles[customerId];
+  if (!bundle) throw new Error("Customer not found in Nessie.");
+  return bundle;
+}
+
 export function useFinance() {
   const asOf = useMemo(localToday, []);
   const month = monthOf(asOf);
@@ -115,8 +127,7 @@ export function useFinance() {
       return;
     }
     setLoading(true);
-    nessie
-      .fetchBundle(source.customerId)
+    loadOwnBundle(source.customerId, LEAGUE_STALE_MS)
       .then(
         (bundle) =>
           !cancelled && setData(nessieToProviderData(bundle, "nessie")),
@@ -153,7 +164,7 @@ export function useFinance() {
   const refreshNessie = useCallback(async () => {
     if (source.kind !== "nessie" || !source.customerId) return;
     const next = nessieToProviderData(
-      await nessie.fetchBundle(source.customerId),
+      await loadOwnBundle(source.customerId, 0),
       "nessie",
     );
     const current = selectedSource.current;
@@ -175,7 +186,11 @@ export function useFinance() {
     if (source.kind !== "nessie" || !playerId || ownVersion === "0") return;
     const version = `${playerId}:${ownVersion}`;
     if (lastOwnVersion.current === version) return;
+    // The first score we see for this player is already reflected in the data
+    // we just loaded; only a newer one (a move) needs a re-fetch.
+    const firstSighting = !lastOwnVersion.current.startsWith(`${playerId}:`);
     lastOwnVersion.current = version;
+    if (firstSighting) return;
     void refreshNessie().catch(() =>
       setError("Couldn't refresh the latest Nessie activity."),
     );

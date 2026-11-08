@@ -11,7 +11,6 @@ export default function App({ entered = true }: { entered?: boolean }) {
   const f = useFinance();
   const live = useLiveLeague(
     f.source.kind === "nessie" && __NESSIE_CONFIGURED__,
-    f.customers,
   );
   const [tab, setTab] = useState("Matchup");
   const [reportMonth, setReportMonth] = useState("");

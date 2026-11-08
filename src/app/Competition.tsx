@@ -194,7 +194,7 @@ export function Competition({
     onVisibleMonthChange?.(tab === "Reports" ? reportMonth : month);
   }, [onVisibleMonthChange, tab, reportMonth, month]);
   if (isLive && !liveReady) {
-    const noLeague = !!f.customers && (live?.members.length ?? 0) < 2;
+    const noLeague = !!live?.loaded && live.members.length < 2;
     return (
       <section className="card competition-empty">
         <span className="section-symbol">◈</span>
@@ -235,6 +235,9 @@ export function Competition({
             THE CAMPUS COLLECTIVE{" "}
             <span className={`sample-label${league.live ? " live-label" : ""}`}>
               {league.live ? "LIVE · NESSIE" : "SAMPLE LEAGUE"}
+              {league.live && live?.refreshing && (
+                <span className="league-updating" role="status"> · updating…</span>
+              )}
             </span>
           </p>
           <div className="matchup-title-row">
