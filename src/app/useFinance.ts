@@ -281,4 +281,4 @@ export function useFinance() {
   };
 }
 
-export type FinanceState = ReturnType<typeof useFinance>;
+export type FinanceState = ReturnType<typeof useFinance> & { readOnly?: boolean };

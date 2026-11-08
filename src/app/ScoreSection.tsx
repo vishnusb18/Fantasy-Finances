@@ -21,7 +21,6 @@ export function ScoreSection({ f }: { f: FinanceState }) {
   return (
     <Card
       title="Efficiency score"
-      subtitle="How well you're managing relative to your own realistic capacity — not income, net worth or market luck."
       actions={
         <Chip tone={s.status === "final" ? "good" : "info"}>
           {s.status === "final" ? "Final" : `Provisional · as of ${s.asOf}`}
@@ -130,17 +129,11 @@ export function ScoreSection({ f }: { f: FinanceState }) {
             </tbody>
           </table>
           <p className="hint">
-            The five positions share 35 points using fixed category weights.
-            Unscored category weights are redistributed proportionally. The
-            overall discretionary cap can reduce all position points together;
-            pending purchases affect projections only.
+            35 spending points use fixed category weights and the overall cap.
+            Pending purchases affect projections only.
           </p>
         </details>
       )}
-      <p className="fineprint">
-        {s.scoringVersion} · baseline {s.baselineId.split("|").pop()} ·
-        deterministic, no AI decides points.
-      </p>
     </Card>
   );
 }

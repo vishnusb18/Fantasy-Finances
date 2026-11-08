@@ -2,6 +2,9 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
 import './styles.css';
+import './purple-gold.css';
+import './inter.css';
+import './v5.css';
 
 // MVP (option A): the app runs entirely in the browser. The SpacetimeDB
 // connection from the template is intentionally not mounted yet; the generated

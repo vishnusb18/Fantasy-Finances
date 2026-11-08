@@ -1463,14 +1463,6 @@ body {
 .public-breakdown p span {
   color: var(--muted);
 }
-.personal-report > p {
-  font-size: 0.85rem;
-  color: var(--muted);
-  line-height: 1.8;
-}
-.personal-report > p strong {
-  color: var(--accent);
-}
 .opportunity {
   border: 1px solid #efbc7733;
   background: #efbc7708;
@@ -1486,9 +1478,6 @@ body {
   font-size: 0.75rem;
   color: var(--muted);
   margin-bottom: 0;
-}
-.personal-report > .link {
-  margin-top: 15px;
 }
 .modal-backdrop {
   position: fixed;

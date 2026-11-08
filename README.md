@@ -122,3 +122,7 @@ The app opens to a responsive **Matchup** experience. Explore **League** for fin
 Offline mode includes six synthetic players, three completed months, and an active monthly round. Switch players and months to explore the demo. Live Nessie customers retain their financial dashboard; no live multiplayer league is connected.
 
 See [COMPETITION.md](COMPETITION.md) for scoring v2, projection assumptions, fixture limitations, privacy boundaries, and validation commands.
+
+The purple/gold V4 interface follows the packaged design reference. See [DESIGN_IMPLEMENTATION.md](DESIGN_IMPLEMENTATION.md) for components, verification, and screenshots of the implemented app.
+
+V5 adds concise copy, bounded matchup month arrows with bubble ripples, deeper non-ticket gold panels, a league-only Actual/Potential report chart, and synchronized My Finances history. See [V5_IMPLEMENTATION.md](V5_IMPLEMENTATION.md) for changed components, verification, and before/after screenshots.

@@ -1,0 +1,22 @@
+{
+  "Matchup": {
+    "before": 638,
+    "after": 397,
+    "reductionPercent": 38
+  },
+  "League": {
+    "before": 359,
+    "after": 241,
+    "reductionPercent": 33
+  },
+  "Reports": {
+    "before": 663,
+    "after": 287,
+    "reductionPercent": 57
+  },
+  "My Finances": {
+    "before": 740,
+    "after": 481,
+    "reductionPercent": 35
+  }
+}

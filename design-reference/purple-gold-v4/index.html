@@ -1,0 +1,1102 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Fantasy Finance — Violet League Prototype</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#12081d;
+      --bg-2:#1a0e2c;
+      --panel:#201235;
+      --panel-2:#281744;
+      --panel-3:#2f1b4d;
+      --edge:#4d2f7b;
+      --edge-2:#6f46aa;
+      --violet:#8d5cff;
+      --violet-2:#b79cff;
+      --gold:#f4c85b;
+      --gold-2:#ffdf8a;
+      --ink:#f7f2ff;
+      --muted:#b9aad4;
+      --muted-2:#8b7aa8;
+      --good:#67d8a5;
+      --warn:#ff9669;
+      --bad:#f56e90;
+      --shadow:0 18px 48px rgba(0,0,0,.35);
+      --radius:24px;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;background:radial-gradient(circle at top,#2a1647 0,#140a23 42%,#100717 100%);color:var(--ink);font-family:Inter,system-ui,-apple-system,sans-serif;font-feature-settings:"tnum" 1,"cv11" 1;}
+    body{min-height:100vh}
+    button,input,select{font:inherit}
+    .app{display:grid;grid-template-columns:280px 1fr;min-height:100vh}
+    .sidebar{background:linear-gradient(180deg,rgba(19,9,33,.98),rgba(16,8,28,.96));border-right:1px solid rgba(255,255,255,.06);padding:28px 18px;position:sticky;top:0;height:100vh;overflow:auto}
+    .brand{display:flex;gap:14px;align-items:center;padding:6px 10px 26px}
+    .logo{width:42px;height:42px;border-radius:14px;background:linear-gradient(135deg,var(--gold),#df9f2d);display:grid;place-items:center;color:#301e00;font-weight:900;box-shadow:0 10px 24px rgba(244,200,91,.25)}
+    .brand h1{font-size:18px;line-height:1;letter-spacing:-.04em;margin:0 0 4px}
+    .brand p{margin:0;color:var(--muted);font-size:12px}
+    .nav-group{margin-top:18px}
+    .nav-label{color:var(--muted-2);font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;padding:0 12px 10px}
+    .nav{display:grid;gap:8px}
+    .nav button{border:1px solid transparent;background:transparent;color:var(--muted);padding:13px 14px;border-radius:16px;display:flex;align-items:center;gap:12px;font-weight:650;text-align:left}
+    .nav button.active{background:linear-gradient(180deg,rgba(141,92,255,.16),rgba(141,92,255,.08));border-color:rgba(183,156,255,.25);color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.04)}
+    .nav .bullet{width:10px;height:10px;border-radius:50%;background:currentColor;opacity:.75}
+    .league-card,.season-card{background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.02));border:1px solid rgba(255,255,255,.07);border-radius:20px;padding:16px;box-shadow:var(--shadow)}
+    .league-card{margin:8px 10px 14px}
+    .league-card .top{display:flex;justify-content:space-between;align-items:center;gap:10px}
+    .chip{display:inline-flex;align-items:center;gap:6px;padding:8px 10px;border-radius:999px;font-size:11px;font-weight:700}
+    .chip.gold{background:rgba(244,200,91,.14);border:1px solid rgba(244,200,91,.22);color:var(--gold-2)}
+    .chip.violet{background:rgba(141,92,255,.14);border:1px solid rgba(183,156,255,.24);color:#d8c8ff}
+    .chip.green{background:rgba(103,216,165,.12);border:1px solid rgba(103,216,165,.2);color:#b3f0d2}
+    .season-card{margin:18px 10px 0}
+    .season-card h3,.league-card h3{margin:0;font-size:15px;letter-spacing:-.03em}
+    .season-meta,.league-meta{display:flex;justify-content:space-between;color:var(--muted);font-size:12px;margin-top:10px}
+    .content{padding:30px clamp(20px,4vw,56px) 80px}
+    .topbar{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:26px}
+    .headline h2{margin:0;font-size:32px;letter-spacing:-.05em}
+    .headline p{margin:8px 0 0;color:var(--muted);font-size:14px;line-height:1.65;max-width:800px}
+    .controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    select,.ghost{height:42px;border-radius:14px;padding:0 14px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);color:#fff}
+    .ghost{display:flex;align-items:center;font-weight:700}
+    .page{display:none}
+    .page.active{display:block}
+
+    /* ticket design */
+    .ticket-wrap{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+    .ticket{
+      position:relative;padding:24px 26px 22px;background:linear-gradient(180deg,rgba(40,23,68,.95),rgba(27,15,45,.98));
+      border:1px solid rgba(255,255,255,.08); border-radius:26px; box-shadow:var(--shadow);
+      clip-path:polygon(0 0,calc(100% - 20px) 0,100% 20px,100% calc(50% - 18px),calc(100% - 12px) 50%,100% calc(50% + 18px),100% calc(100% - 20px),calc(100% - 20px) 100%,0 100%,0 calc(50% + 18px),12px 50%,0 calc(50% - 18px));
+      overflow:hidden;
+    }
+    .ticket:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at top right,rgba(244,200,91,.18),transparent 35%), radial-gradient(circle at bottom left,rgba(141,92,255,.25),transparent 42%);pointer-events:none}
+    .ticket.you{border-color:rgba(183,156,255,.28)}
+    .ticket.opponent{border-color:rgba(244,200,91,.24)}
+    .ticket-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:14px}
+    .eyebrow{font-size:11px;text-transform:uppercase;letter-spacing:.14em;color:var(--muted-2);font-weight:800}
+    .team-id{display:flex;gap:14px;align-items:center}
+    .crest{width:54px;height:54px;border-radius:18px;display:grid;place-items:center;font-weight:800;color:#fff;position:relative;box-shadow:inset 0 0 0 1px rgba(255,255,255,.16)}
+    .crest.violet{background:linear-gradient(135deg,#7c53ed,#b282ff)}
+    .crest.gold{background:linear-gradient(135deg,#ffdf88,#e1a732);color:#3a2500}
+    .ticket h3{margin:0;font-size:22px;letter-spacing:-.04em}
+    .sub{color:var(--muted);font-size:13px;margin-top:4px}
+    .scoreline{display:flex;justify-content:space-between;align-items:end;gap:12px;margin:18px 0 10px}
+    .score{font-size:54px;font-weight:800;letter-spacing:-.08em;line-height:.9}
+    .score small{font-size:18px;color:var(--muted);margin-left:4px}
+    .stat-stack{display:grid;gap:10px;margin-top:18px}
+    .mini-stat{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);border-radius:16px}
+    .mini-stat span{color:var(--muted);font-size:12px}
+    .mini-stat strong{font-size:14px}
+    .vs-bridge{display:grid;place-items:center;align-self:center}
+    .vs-badge{width:74px;height:74px;border-radius:24px;background:linear-gradient(180deg,#3a235f,#221237);border:1px solid rgba(255,255,255,.1);display:grid;place-items:center;font-weight:900;font-size:19px;box-shadow:var(--shadow);color:var(--gold-2)}
+    .matchup-hero{display:grid;grid-template-columns:1fr 90px 1fr;gap:18px;align-items:stretch}
+    .hero-footer{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:18px;flex-wrap:wrap}
+    .status-strip{display:flex;gap:10px;flex-wrap:wrap}
+    .hero-footer .callout{font-size:12px;color:var(--muted);max-width:540px}
+
+    .section{margin-top:28px}
+    .section-head{display:flex;justify-content:space-between;gap:14px;align-items:end;margin-bottom:16px;flex-wrap:wrap}
+    .section-head h3{margin:0;font-size:22px;letter-spacing:-.04em}
+    .section-head p{margin:6px 0 0;color:var(--muted);font-size:13px}
+
+    .panel{background:linear-gradient(180deg,rgba(34,19,58,.96),rgba(28,16,47,.96));border:1px solid rgba(255,255,255,.08);border-radius:24px;box-shadow:var(--shadow)}
+    .panel-inner{padding:20px}
+
+    .duel-list{display:grid;gap:14px}
+    .duel{padding:18px;border-radius:22px;background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.02));border:1px solid rgba(255,255,255,.06)}
+    .duel-top{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px}
+    .duel-center{text-align:center}
+    .duel-center h4{margin:0;font-size:16px;letter-spacing:-.03em}
+    .delta{display:inline-flex;align-items:center;gap:6px;padding:8px 10px;border-radius:999px;background:rgba(244,200,91,.13);border:1px solid rgba(244,200,91,.25);color:var(--gold-2);font-size:11px;font-weight:800;margin-top:8px}
+    .player-side{display:grid;gap:6px}
+    .player-side.right{text-align:right}
+    .player-name{font-size:12px;color:var(--muted)}
+    .points{font-size:22px;font-weight:800;letter-spacing:-.05em}
+    .bubble-row{display:flex;gap:9px;align-items:center;flex-wrap:wrap}
+    .bubble-row.right{justify-content:flex-end}
+    .bubble{width:14px;height:14px;border-radius:50%;border:2px solid currentColor;position:relative;overflow:hidden;opacity:.88}
+    .bubble.medium{width:18px;height:18px}.bubble.large{width:22px;height:22px}.bubble.xl{width:26px;height:26px}.bubble.xxl{width:30px;height:30px}
+    .bubble.filled{background:currentColor}.bubble.partial::after{content:"";position:absolute;inset:0;background:currentColor;transform-origin:left center}.bubble.partial[data-fill=".2"]::after{transform:scaleX(.2)}
+    .bubble.partial[data-fill=".4"]::after{transform:scaleX(.4)} .bubble.partial[data-fill=".6"]::after{transform:scaleX(.6)} .bubble.partial[data-fill=".8"]::after{transform:scaleX(.8)}
+    .violet-text{color:#b48dff}.gold-text{color:#f7d777}
+    .duel-foot{margin-top:14px;padding-top:14px;border-top:1px dashed rgba(255,255,255,.09);display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;color:var(--muted);font-size:12px}
+
+    .grid-2{display:grid;grid-template-columns:1.1fr .9fr;gap:18px}
+
+    /* league */
+    .current-matchups{display:grid;gap:16px}
+    .race-match{padding:18px 18px 16px;border-radius:24px;background:linear-gradient(180deg,rgba(44,24,72,.95),rgba(33,18,53,.95));border:1px solid rgba(255,255,255,.08)}
+    .race-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}
+    .race-teams{display:grid;grid-template-columns:120px 1fr 120px;gap:12px;align-items:center}
+    .race-team{font-size:13px;font-weight:700}
+    .race-team.right{text-align:right}
+    .race-track{position:relative;height:54px;border-radius:999px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);overflow:hidden}
+    .lane{position:absolute;top:10px;bottom:10px;width:calc(50% - 18px)}
+    .lane.left{left:14px;background:linear-gradient(90deg,rgba(141,92,255,.16),rgba(141,92,255,.03));border-radius:999px 0 0 999px}
+    .lane.right{right:14px;background:linear-gradient(270deg,rgba(244,200,91,.15),rgba(244,200,91,.03));border-radius:0 999px 999px 0}
+    .finish{position:absolute;left:50%;top:7px;bottom:7px;width:2px;background:rgba(255,255,255,.22)}
+    .car{position:absolute;top:9px;width:34px;height:34px;border-radius:12px;display:grid;place-items:center;font-size:14px;font-weight:900;box-shadow:0 6px 18px rgba(0,0,0,.22)}
+    .car.left{background:linear-gradient(135deg,#7c53ed,#b282ff);color:#fff;transform:translateX(-50%)}
+    .car.right{background:linear-gradient(135deg,#ffe08c,#e3aa39);color:#3f2800;transform:translateX(50%)}
+    .lane-labels{display:flex;justify-content:space-between;color:var(--muted);font-size:11px;margin-top:8px}
+    .standings{display:grid;gap:12px}
+    .standing-row{display:grid;grid-template-columns:44px 1.3fr .7fr .6fr .55fr .55fr;gap:14px;align-items:center;padding:15px 18px;border-radius:18px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06)}
+    .rank{display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:800;font-size:20px}
+    .move{font-size:11px;font-weight:800;margin-top:4px}
+    .move.up{color:#b6efcf}.move.down{color:#ffafbf}.move.flat{color:#d6c8ef}
+    .teamcell{display:flex;align-items:center;gap:12px}.avatar{width:42px;height:42px;border-radius:14px;display:grid;place-items:center;font-weight:800}.avatar.violet{background:linear-gradient(135deg,#7b50ef,#a978ff)}.avatar.gold{background:linear-gradient(135deg,#ffe38c,#e0a533);color:#3b2500}.avatar.green{background:linear-gradient(135deg,#47c982,#8defc0);color:#123523}.avatar.pink{background:linear-gradient(135deg,#eb6e98,#ffb0cc)}
+    .team-meta strong{display:block;font-size:15px}.team-meta span{color:var(--muted);font-size:12px}
+    .metric strong{display:block;font-size:15px}.metric span{color:var(--muted);font-size:11px}
+
+    /* reports */
+    .awards{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+    .award{padding:18px 18px 22px;border-radius:0 0 22px 22px;background:linear-gradient(180deg,rgba(244,200,91,.12),rgba(255,255,255,.03));border:1px solid rgba(244,200,91,.16);clip-path:polygon(0 0,100% 0,100% 92%,50% 100%,0 92%)}
+    .award .title{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#dcc48e;font-weight:800}.award h4{margin:12px 0 6px;font-size:18px;letter-spacing:-.04em}.award p{margin:0;color:var(--muted);font-size:12px;line-height:1.55}
+    .report-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+    .bench-card{padding:16px;border-radius:18px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);display:flex;justify-content:space-between;gap:12px;align-items:center}
+    .bench-card strong{font-size:16px}
+    .report-hero{display:grid;grid-template-columns:1.1fr .9fr;gap:18px}
+    .big-stat{display:flex;gap:16px;align-items:end;flex-wrap:wrap}
+    .big-stat .n{font-size:50px;font-weight:800;letter-spacing:-.08em}
+    .big-stat .desc{color:var(--muted);font-size:13px;max-width:420px;line-height:1.6}
+
+    /* finances */
+    .fin-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:18px}
+    .pie-wrap{display:grid;grid-template-columns:360px 1fr;gap:18px;align-items:center}
+    .pie-card{display:grid;place-items:center;padding:10px}
+    .pie-svg{width:320px;height:320px}
+    .pie-center{font-size:14px;text-anchor:middle;fill:#fff}
+    .pie-label{font-size:12px;fill:var(--muted)}
+    .legend{display:grid;gap:10px}
+    .legend-item{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;border-radius:16px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);cursor:pointer}
+    .legend-item.active{background:rgba(141,92,255,.12);border-color:rgba(183,156,255,.26)}
+    .swatch{width:12px;height:12px;border-radius:50%}
+    .history{padding:16px;border-radius:18px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);min-height:270px}
+    .history h4{margin:0 0 6px;font-size:18px;letter-spacing:-.04em}.history .intro{color:var(--muted);font-size:13px;line-height:1.65;margin-bottom:14px}
+    .history-list{display:grid;gap:10px}.history-item{padding:12px 14px;border-radius:14px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05)}
+    .history-item .top{display:flex;justify-content:space-between;gap:10px;align-items:center}.history-item strong{font-size:14px}.history-item span,.history-item p{color:var(--muted);font-size:12px;margin:4px 0 0;line-height:1.5}
+    .history-note{margin-top:14px;padding-top:14px;border-top:1px dashed rgba(255,255,255,.08);color:#d5c7ef;font-size:12px;line-height:1.7}
+
+    .foot-space{height:30px}
+
+    @media (max-width:1200px){
+      .grid-2,.report-grid,.report-hero,.fin-grid,.pie-wrap{grid-template-columns:1fr}
+      .awards{grid-template-columns:repeat(2,1fr)}
+      .ticket-wrap{grid-template-columns:1fr}
+      .matchup-hero{grid-template-columns:1fr}
+      .vs-bridge{display:none}
+    }
+    @media (max-width:980px){
+      .app{grid-template-columns:1fr}
+      .sidebar{position:static;height:auto;border-right:0;border-bottom:1px solid rgba(255,255,255,.06)}
+      .race-teams{grid-template-columns:92px 1fr 92px}
+      .standing-row{grid-template-columns:42px 1.3fr .7fr .7fr;grid-template-areas:'rank team record pf' 'rank team streak pa';row-gap:10px}
+      .standing-row .rank{grid-area:rank}.standing-row .teamcell{grid-area:team}.standing-row .metric.rec{grid-area:record}.standing-row .metric.streak{grid-area:streak}.standing-row .metric.pf{grid-area:pf}.standing-row .metric.pa{grid-area:pa}
+    }
+    @media (max-width:720px){
+      .content{padding:22px 16px 80px}
+      .headline h2{font-size:28px}
+      .score{font-size:44px}
+      .awards{grid-template-columns:1fr}
+      .duel-top{grid-template-columns:1fr;gap:14px}
+      .player-side,.player-side.right{text-align:left}
+      .bubble-row.right{justify-content:flex-start}
+      .pie-svg{width:280px;height:280px}
+      .pie-wrap{gap:10px}
+      .standings .metric strong{font-size:14px}
+    }
+  </style>
+<style>
+/* Fantasy Finance – Ticket Race / Lilac Circuit — design study */
+:root {
+  --bg:#7651c6;--bg-2:#825cda;--panel:#ffe4a2;--panel-2:#fff0c7;--panel-3:#f8cc6c;
+  --edge:#b67b28;--edge-2:#7044bc;--violet:#6441ba;--violet-2:#9264dd;
+  --gold:#f4c45b;--gold-2:#ffe59b;--ink:#321c58;--muted:#755d8f;--muted-2:#8f71a6;
+  --good:#266d51;--warn:#a44a25;--bad:#bd3b68;--shadow:0 16px 36px #3f277a29;
+  --radius:20px;
+}
+html,body{background:#7651c6;color:#fff}
+body{background:radial-gradient(ellipse at 83% 2%,#8d6be0 0,transparent 42%),linear-gradient(155deg,#7651c6,#6946bd 67%,#764fce);min-height:100vh}
+button:focus-visible,select:focus-visible,.pie-seg:focus-visible{outline:3px solid #fff;outline-offset:4px}
+.app{grid-template-columns:248px minmax(0,1fr)}
+.sidebar{background:linear-gradient(180deg,#7048c0,#6540b0);border-right:1px solid #ffffff3b;box-shadow:8px 0 38px #4c2d9521;padding:27px 14px}
+.brand{padding:7px 10px 24px}.brand h1{color:#fff;font-size:17px}.brand p{color:#e9dcff;line-height:1.35}
+.logo{background:var(--gold);box-shadow:0 8px 18px #3b216b50;color:var(--ink);border-radius:11px}
+.league-card,.season-card{background:#ffffff19;border:1px solid #ffffff36;box-shadow:none;color:#fff}
+.league-card h3,.season-card h3{color:#fff}
+.league-meta,.season-meta,.nav-label,.nav-group{color:#e9dcff}
+.nav button{color:#e8ddff;border-radius:12px}.nav button.active{background:var(--gold);color:var(--ink);border-color:#ffdfa2;box-shadow:0 4px 12px #4a288138}.nav button.active .bullet{background:var(--ink)}
+.nav button:hover:not(.active){background:#ffffff18}
+.content{max-width:1570px;padding:32px clamp(20px,3vw,52px) 95px}
+.headline h2{color:#fff;font-size:33px;letter-spacing:-.045em}
+.headline p{color:#f0e7ff;font-size:13px}
+.ghost,select{color:var(--ink);border:1px solid #e6b65b;background:#ffe2a0;font-weight:700}
+select option{background:#ffedbf;color:var(--ink)}
+.eyebrow{color:#6b4c89;font-size:10px;letter-spacing:.14em}
+.chip{white-space:normal}
+.chip.gold,.chip.violet,.chip.green{color:var(--ink);background:#ffecb7;border-color:#dfaa4b}
+.chip.green{background:#dcf6d9;color:#285741;border-color:#9acdaa}
+.section-head{margin:0 0 16px}.section-head h3{color:#fff;font-size:23px}.section-head p{color:#efe6ff;font-size:13px}
+.section{margin-top:29px}
+.section .section-head{margin-bottom:15px}
+.panel{background:linear-gradient(153deg,#ffe5a4,#fff0c4);color:var(--ink);border:1px solid #f5d084;box-shadow:var(--shadow)}
+.panel-inner{padding:22px}
+.panel .section-head h3,.panel .section-head p{color:var(--ink)}
+.panel .section-head p{color:#735a88}
+.panel .sub,.panel .eyebrow{color:var(--muted)}
+.sub{color:#8267a1}
+/* competition hero: two matching tickets with notched, chamfered corners */
+.matchup-hero{display:grid;grid-template-columns:minmax(0,1fr) 64px minmax(0,1fr);gap:8px;align-items:stretch}
+.ticket{background:linear-gradient(155deg,#fff0bd,#f3c866 92%);color:var(--ink);border:2px solid #ffecb4;box-shadow:0 15px 30px #432c8435;padding:20px 22px 20px 0;border-radius:0;overflow:visible;clip-path:polygon(0 24px,24px 0,calc(100% - 24px) 0,100% 24px,100% calc(50% - 14px),calc(100% - 14px) 50%,100% calc(50% + 14px),100% calc(100% - 24px),calc(100% - 24px) 100%,24px 100%,0 calc(100% - 24px),0 calc(50% + 14px),14px 50%,0 calc(50% - 14px));position:relative;min-width:0}
+.ticket:before{background:linear-gradient(110deg,transparent,#fff8d76b 63%,transparent);position:absolute;inset:0;content:"";pointer-events:none}
+.ticket.you,.ticket.opponent{border-color:#ffedb8}
+.ticket::after{position:absolute;content:"";inset:11px 12px;border:2px solid #9564b3;border-radius:16px;pointer-events:none;opacity:.75}
+.hero-ticket-content{position:relative;z-index:1;display:grid;grid-template-columns:60px minmax(0,1fr);min-height:233px}
+.ticket-rail{display:flex;align-items:center;justify-content:center;border-right:2px solid #a36ab3;margin:8px 0;padding:4px;position:relative}
+.ticket-rail span{writing-mode:vertical-rl;transform:rotate(180deg);font-size:10px;letter-spacing:.19em;font-weight:800;color:#654481;text-transform:uppercase}
+.ticket-body{min-width:0;padding:2px 0 2px 18px}
+.ticket .team-id{gap:9px;align-items:center}.ticket .ticket-head{margin:5px 0 5px}.ticket .ticket-head .eyebrow{margin-bottom:8px}
+.ticket .crest,.ticket .avatar{width:43px;height:43px;border-radius:12px;flex:none;font-size:13px}
+.ticket .crest,.ticket .avatar,.ticket .avatar.gold,.ticket .avatar.violet,.ticket .avatar.pink,.ticket .avatar.green{background:#4d2d89;color:#fff}
+.ticket h3{color:var(--ink);font-size:17px;letter-spacing:-.035em;white-space:normal}
+.ticket .sub,.ticket .score small{color:#795b8e;font-size:11px}
+.ticket .scoreline{margin:19px 0 12px}.ticket .score{font-size:48px;color:#301950}
+.ticket .score small{font-size:15px}.ticket .scoreline .score[style]{font-size:27px!important}
+.ticket .stat-stack{gap:8px;margin-top:13px}
+.ticket .mini-stat{border:1px solid #d8ae5c;background:#fff3c7b5;color:var(--ink);border-radius:12px;padding:11px;align-items:flex-start;line-height:1.45}
+.ticket .mini-stat span{color:#755d89;flex:0 0 90px}.ticket .mini-stat strong{font-size:12px;text-align:right}
+.ticket .chip{background:#fff6d5;border-color:#d8aa5b;color:#5d3c78;font-size:10px}
+.vs-bridge{display:grid;place-items:center}.vs-badge{width:54px;height:54px;border-radius:50%;background:#fff0be;color:#422268;border:3px solid #f2bd4b;box-shadow:0 9px 22px #40258255;font-size:14px}
+.hero-footer{margin:18px 0 0;color:#fff}.hero-footer .callout{color:#eee3ff}
+/* individual matchup category = two real gold ticket stubs per row */
+.position-list{display:grid;gap:17px}
+.position-duel{background:#6340ad50;border:1px solid #ffffff30;padding:17px;border-radius:18px;box-shadow:0 8px 19px #4327831d}
+.position-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 11px;color:#fff}
+.position-heading h4{font-size:16px;margin:0;font-weight:800;letter-spacing:-.025em}.position-heading span{font-size:11px;font-weight:650;color:#efe6ff}
+.position-tickets{display:grid;grid-template-columns:minmax(0,1fr) 64px minmax(0,1fr);align-items:stretch;gap:6px}
+.position-ticket{background:linear-gradient(130deg,#fff0bd 0%,#f8d475 100%);border:2px solid #fff4d4;color:var(--ink);position:relative;min-width:0;min-height:137px;padding:14px 19px 13px 0;clip-path:polygon(0 17px,17px 0,calc(100% - 17px) 0,100% 17px,100% calc(50% - 12px),calc(100% - 12px) 50%,100% calc(50% + 12px),100% calc(100% - 17px),calc(100% - 17px) 100%,17px 100%,0 calc(100% - 17px),0 calc(50% + 12px),12px 50%,0 calc(50% - 12px));filter:drop-shadow(0 4px 8px #321a6c45)}
+.position-ticket:after{content:"";position:absolute;inset:7px 8px;border:1.5px solid #8453a8;border-radius:10px;pointer-events:none}
+.position-ticket-inner{display:grid;grid-template-columns:45px minmax(0,1fr);min-height:107px;position:relative;z-index:1}
+.position-rail{border-right:1.5px solid #9970aa;display:flex;align-items:center;justify-content:center;min-width:0}
+.position-rail span{writing-mode:vertical-rl;transform:rotate(180deg);font-size:9px;font-weight:900;letter-spacing:.13em;color:#785093}
+.position-ticket-body{padding:1px 3px 1px 12px;display:flex;flex-direction:column;min-width:0}
+.position-ticket-body .player-name{color:#6d5189;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:750}
+.position-ticket-body .points{font-size:27px;color:var(--ink);margin:6px 0 7px}
+.position-ticket-body .points small{font-size:11px;color:#755e86;letter-spacing:0}
+.position-ticket-body .bubble-row{gap:7px;align-items:center;flex-wrap:nowrap;margin:0}
+.position-ticket-body .bubble{width:13px;height:13px;color:#62439f}.position-ticket-body .bubble.medium{width:16px;height:16px}.position-ticket-body .bubble.large{width:19px;height:19px}.position-ticket-body .bubble.xl{width:22px;height:22px}.position-ticket-body .bubble.xxl{width:25px;height:25px}
+.position-ticket-body .bubble{border-width:2px;flex:0 0 auto}
+.position-ticket-body .ticket-rate{font-size:10px;color:#6a4a80;font-weight:700;margin-top:auto;padding-top:4px}
+.position-between{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;text-align:center}
+.position-between strong{width:45px;height:45px;border:2px solid #f0c054;background:#fff2c8;border-radius:50%;display:grid;place-items:center;color:var(--ink);font-size:13px}
+.position-between small{font-size:10px;font-weight:800;color:#fff0c5;max-width:64px;line-height:1.35}
+.row-details{margin-top:12px;color:#f7ecff;font-size:12px;line-height:1.5;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.row-details button{background:none;border:none;color:#ffe69d;font-size:11px;font-weight:800;cursor:pointer;padding:5px 0}
+.position-explain{margin-top:9px;padding:11px 13px;border:1px solid #ffffff38;color:#fff0d6;background:#4e2b94a6;border-radius:12px;font-size:12px;line-height:1.55}
+/* League = gold racing boards with actual racecar art */
+.current-matchups{display:grid;gap:15px}.race-match{background:linear-gradient(150deg,#ffe9b5,#f6ca69);color:var(--ink);border:2px solid #fff0c8;border-radius:22px;padding:19px 22px 16px}
+.race-match .chip{background:#fff7df;border-color:#d4a448;color:#5d407b}
+.race-head{margin-bottom:11px}.race-head strong{font-size:15px;color:var(--ink)}
+.race-names{display:flex;align-items:center;justify-content:space-between;font-size:12px;font-weight:700;gap:12px;margin-bottom:7px}
+.race-score{color:#563579;font-weight:850;font-size:15px}
+.race-arena{background:#5d3b9b;border:2px solid #b18fdc;border-radius:17px;position:relative;padding:12px 13px;overflow:hidden}
+.race-finish{position:absolute;left:50%;top:0;bottom:0;width:23px;transform:translateX(-50%);background:repeating-conic-gradient(#fff6d8 0% 25%,#563a90 0% 50%) 0 0 / 12px 12px;opacity:.72;border-left:1px solid #ffefb8;border-right:1px solid #ffefb8}
+.race-lane{position:relative;width:calc(50% - 18px);height:45px;border-bottom:1px dashed #ffffff5a;display:flex;align-items:center;margin-bottom:7px}
+.race-lane:last-child{border-bottom:0;margin-bottom:0}
+.race-lane.left{margin-right:auto}.race-lane.right{margin-left:auto}
+.race-lane:before{position:absolute;content:"";left:0;right:0;top:10px;border-top:1px dashed #ffffff32}
+.race-car{position:absolute;top:5px;left:clamp(31px,var(--progress),calc(100% - 31px));width:62px;height:34px;transform:translateX(-50%);transition:left 900ms cubic-bezier(.22,.6,.25,1);filter:drop-shadow(0 4px 5px #24125066)}
+.race-lane.right .race-car{transform:translateX(-50%) scaleX(-1)}
+.race-car svg{display:block;width:62px;height:34px}
+.race-car-number{position:absolute;top:9px;left:23px;font-size:8px;font-weight:900;color:#271345;z-index:2}
+.race-lane.right .race-car-number{transform:scaleX(-1)}
+.race-caption{font-size:11px;color:#6b4788;margin-top:9px;display:flex;justify-content:space-between}
+.race-meter{display:flex;justify-content:space-between;align-items:center;gap:6px;margin-top:9px}.race-meter span{font-size:12px;color:#6b4a8b}.race-meter strong{font-size:13px}
+/* standings gold rows */
+.standing-row{background:#fff6d8;border:1px solid #efca7b;border-radius:14px;color:var(--ink);grid-template-columns:44px 1.3fr .7fr .6fr .55fr .55fr}
+.standing-row.highlight{background:#ffdc81;border:2px solid #c29129}
+.rank{color:#321d56}.move.up{color:#187e51}.move.down{color:#be3f69}.move.flat{color:#7d638c}
+.standing-row .team-meta span,.standing-row .metric span{color:#80658e}
+.standing-row .avatar,.standing-row .avatar.gold,.standing-row .avatar.violet,.standing-row .avatar.pink,.standing-row .avatar.green{background:#6941ae;color:#fff}
+/* reports: light gold surfaces, strong dark type */
+.report-hero .panel{background:linear-gradient(145deg,#ffe8af,#ffefc7)}
+.big-stat .n{color:var(--ink)}.big-stat .desc{color:#756087}
+.bench-card,.legend-item,.history,.history-item{background:#fff7dd;border:1px solid #e4bd66;color:var(--ink)}
+.bench-card strong,.history-item strong{color:var(--ink)}
+.bench-card .sub,.history .intro,.history-item p,.history-item span{color:#745b83}
+.award{background:linear-gradient(145deg,#fff2c6,#f4cb6d);border:2px solid #ffe9b6;color:var(--ink);min-height:230px;padding-bottom:31px}
+.award .title{color:#66498c}.award h4{color:var(--ink)}.award p{color:#715781}
+.history-note{color:#624b74;border-color:#c8a76b}
+/* finances pie and activity list */
+.fin-grid{display:grid;grid-template-columns:1.08fr .92fr;gap:19px}
+.pie-wrap{display:grid;grid-template-columns:320px minmax(0,1fr);align-items:center;gap:12px}
+.pie-card{padding:0}.pie-svg{width:305px;height:305px;overflow:visible}
+.pie-seg{cursor:pointer;transform-box:fill-box;transform-origin:center;transition:opacity .2s,filter .2s,transform .2s;stroke:#ffecc0;stroke-width:3}
+.pie-seg.active,.pie-seg:hover,.pie-seg:focus-visible{opacity:1;filter:drop-shadow(0 5px 5px #7953ab50);transform:scale(1.035)}
+.pie-seg:not(.active){opacity:.83}
+.legend{gap:8px}.legend-item{padding:11px 12px;border-radius:12px;cursor:pointer}.legend-item:hover,.legend-item.active{background:#ffd981;border-color:#c28c36}
+.legend-item strong{font-size:12px}
+.legend-item .sub{font-size:10px}
+.history{background:#fff1bd;border:1px solid #dbb465;min-height:292px}
+.history h4{color:var(--ink)}.history .intro{color:#735a87}
+.history-item{background:#fff9e8;border-radius:12px;padding:12px 13px}
+.pie-usage-note{font-size:11px;color:#785a91;line-height:1.5;margin-top:8px}
+.financial-summary{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px;background:#ffda7e;border:1px solid #d9aa4f;border-radius:14px;margin-bottom:17px}
+.financial-summary strong{font-size:24px;letter-spacing:-.04em}.financial-summary p{font-size:11px;margin-top:4px;color:#684d7b}
+/* adaptive layout */
+@media(max-width:1350px){.pie-wrap{grid-template-columns:1fr}.pie-card{justify-self:center}.fin-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:1180px){.fin-grid,.report-grid,.report-hero{grid-template-columns:1fr}.awards{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:980px){
+ .app{display:block}.sidebar{position:relative;height:auto;padding:12px 16px 10px;border-bottom:1px solid #ffffff2e}
+ .sidebar .brand{padding:4px 0 12px}.sidebar .league-card,.sidebar .season-card,.sidebar .nav-label{display:none}
+ .nav-group{margin:0}.sidebar .nav{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}
+ .sidebar .nav button{display:flex;justify-content:center;text-align:center;padding:10px 4px;font-size:11px;gap:5px;flex-direction:column}
+ .content{padding:24px 16px 65px}.headline h2{font-size:26px}
+ .matchup-hero{grid-template-columns:1fr}.vs-bridge{display:grid;position:relative;z-index:2;margin:-12px auto}.vs-badge{width:45px;height:45px}
+ .ticket{padding-right:18px}.ticket .hero-ticket-content{min-height:190px}.ticket .score{font-size:43px}
+}
+@media(max-width:720px){
+ .topbar{align-items:flex-start;flex-direction:column}.headline h2{font-size:25px}.headline p{font-size:12px}
+ .content{padding:22px 13px 50px}.section-head h3{font-size:21px}
+ .position-duel{padding:12px 9px}.position-tickets{grid-template-columns:minmax(0,1fr) 34px minmax(0,1fr);gap:3px}
+ .position-ticket{min-height:136px;padding:10px 7px 9px 0}.position-ticket-inner{grid-template-columns:22px minmax(0,1fr)}
+ .position-rail span{font-size:7px}.position-ticket-body{padding-left:5px;padding-right:0}
+ .position-ticket-body .points{font-size:24px;margin:6px 0}.position-ticket-body .points small{font-size:9px}
+ .position-ticket-body .bubble-row{gap:3px}
+ .position-ticket-body .bubble{width:9px;height:9px;border-width:1.5px}.position-ticket-body .bubble.medium{width:11px;height:11px}.position-ticket-body .bubble.large{width:13px;height:13px}.position-ticket-body .bubble.xl{width:15px;height:15px}.position-ticket-body .bubble.xxl{width:17px;height:17px}
+ .position-between strong{width:30px;height:30px;font-size:10px}.position-between small{font-size:8px}
+ .position-heading h4{font-size:15px}.position-heading span{font-size:10px}
+ .fin-grid,.pie-wrap{grid-template-columns:1fr}.pie-svg{width:min(290px,100%);height:auto}.awards{grid-template-columns:1fr}
+ .race-match{padding:14px}.race-head{align-items:flex-start}.race-head strong{font-size:12px}.race-match .chip{font-size:9px}
+ .standing-row{grid-template-columns:35px 1fr 55px;grid-template-areas:'rank team rec' 'rank team pf';gap:8px;padding:12px 8px}
+ .standing-row .rank{grid-area:rank}.standing-row .teamcell{grid-area:team}.standing-row .metric.rec{grid-area:rec}.standing-row .metric.pf{grid-area:pf}.standing-row .metric.streak,.standing-row .metric.pa{display:none}
+ .standing-row .teamcell{gap:7px}.standing-row .avatar{width:32px;height:32px;font-size:10px}.standing-row .team-meta strong{font-size:12px}.standing-row .team-meta span{font-size:10px}
+ .ticket h3{font-size:16px}.ticket .ticket-body{padding-left:8px}.ticket .hero-ticket-content{grid-template-columns:38px minmax(0,1fr)}.ticket .ticket-rail span{font-size:8px}
+ .ticket .scoreline{align-items:center}.ticket .score{font-size:39px}.ticket .mini-stat{padding:9px}.ticket .mini-stat strong{font-size:11px}.ticket .mini-stat span{font-size:10px;flex-basis:70px}
+}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{transition:none!important;animation:none!important}}
+
+</style>
+<style>
+.race-lane.right .race-car{left:clamp(31px,calc(100% - var(--progress)),calc(100% - 31px))}
+</style>
+<style>
+/* Rounded, punched ticket corners, closer to the supplied admission-stub reference. */
+.ticket,.position-ticket{
+ -webkit-mask:
+ radial-gradient(circle at 0 0, transparent 18px, #000 19px) top left/51% 51% no-repeat,
+ radial-gradient(circle at 100% 0, transparent 18px, #000 19px) top right/51% 51% no-repeat,
+ radial-gradient(circle at 0 100%, transparent 18px, #000 19px) bottom left/51% 51% no-repeat,
+ radial-gradient(circle at 100% 100%, transparent 18px, #000 19px) bottom right/51% 51% no-repeat;
+}
+.position-ticket{
+ -webkit-mask:
+ radial-gradient(circle at 0 0, transparent 12px, #000 13px) top left/51% 51% no-repeat,
+ radial-gradient(circle at 100% 0, transparent 12px, #000 13px) top right/51% 51% no-repeat,
+ radial-gradient(circle at 0 100%, transparent 12px, #000 13px) bottom left/51% 51% no-repeat,
+ radial-gradient(circle at 100% 100%, transparent 12px, #000 13px) bottom right/51% 51% no-repeat;
+}
+</style>
+<style>
+/* On each League entry, cars animate from opposite starting lines toward their scored position. */
+.race-lane.left .race-car{animation:drive-from-left .85s cubic-bezier(.19,.72,.22,1) both}
+.race-lane.right .race-car{animation:drive-from-right .85s cubic-bezier(.19,.72,.22,1) both}
+@keyframes drive-from-left{from{left:31px}to{left:clamp(31px,var(--progress),calc(100% - 31px))}}
+@keyframes drive-from-right{from{left:calc(100% - 31px)}to{left:clamp(31px,calc(100% - var(--progress)),calc(100% - 31px))}}
+@media(prefers-reduced-motion:reduce){.race-lane.left .race-car,.race-lane.right .race-car{animation:none}}
+
+</style>
+
+<style id="v4-race-cars">
+/* V4: recognizable top-view open-wheel racing cars on the actual latest purple/gold app. */
+.race-arena{padding:12px 12px}
+.race-lane{height:64px;margin-bottom:8px}
+.race-runway{position:relative}
+.car-runway{position:absolute;inset:0 54px}
+.race-car{top:4px;width:108px;height:56px;left:var(--progress);transform:translateX(-50%);filter:drop-shadow(0 5px 4px #23114480)}
+.race-lane.right .race-car{left:calc(100% - var(--progress));transform:translateX(-50%) scaleX(-1)}
+.race-car svg{width:108px;height:56px;display:block}
+.race-car-number{display:none}
+@keyframes drive-from-left{from{left:0%}to{left:var(--progress)}}
+@keyframes drive-from-right{from{left:100%}to{left:calc(100% - var(--progress))}}
+@media(max-width:650px){
+ .race-arena{padding:9px 9px}
+ .race-lane{height:48px}
+ .car-runway{inset:0 35px}
+ .race-car{top:4px;width:70px;height:40px}
+ .race-car svg{width:70px;height:40px}
+}
+@media(prefers-reduced-motion:reduce){.race-lane.left .race-car,.race-lane.right .race-car{animation:none}}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="logo">FF</div>
+      <div>
+        <h1>Fantasy Finance</h1>
+        <p>Fantasy rivalry, real financial efficiency.</p>
+      </div>
+    </div>
+
+    <div class="league-card">
+      <div class="top">
+        <div>
+          <div class="eyebrow">League</div>
+          <h3>North Texas Money League</h3>
+        </div>
+        <span class="chip gold">6 Teams</span>
+      </div>
+      <div class="league-meta"><span>Month 03 · November</span><span>Mock league</span></div>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-label">Experience</div>
+      <div class="nav">
+        <button class="active" data-page="matchup"><span class="bullet"></span>Matchup</button>
+        <button data-page="league"><span class="bullet"></span>League</button>
+        <button data-page="reports"><span class="bullet"></span>Monthly Report</button>
+        <button data-page="finances"><span class="bullet"></span>My Finances</button>
+      </div>
+    </div>
+
+    <div class="season-card">
+      <div class="eyebrow">Season Format</div>
+      <h3>Monthly head-to-head</h3>
+      <div class="season-meta"><span>Projected through Nov 30</span><span class="chip violet">Browser calc</span></div>
+    </div>
+  </aside>
+
+  <main class="content">
+    <div class="topbar">
+      <div class="headline">
+        <h2 id="pageTitle">Ticket duels. Real rivalry.</h2>
+        <p id="pageSubtitle">Violet Circuit concept — brighter lilac surroundings, gold foreground tickets, and actual head-to-head racing cars.</p>
+      </div>
+      <div class="controls">
+        <select id="monthSelect">
+          <option value="2026-11">November 2026</option>
+          <option value="2026-10">October 2026</option>
+        </select>
+        <div class="ghost">Design study v3</div>
+      </div>
+    </div>
+
+    <section class="page active" id="matchupPage"></section>
+    <section class="page" id="leaguePage"></section>
+    <section class="page" id="reportsPage"></section>
+    <section class="page" id="financesPage"></section>
+    <div class="foot-space"></div>
+  </main>
+</div>
+
+<script>
+const pages = ['matchup','league','reports','finances'];
+const appState = { page:'matchup', month:'2026-11', activeSlice:'dining' };
+
+const people = {
+  maya:{name:'Maya Chen', team:'Compound Interest', handle:'@mayachen', tag:'MC', tone:'violet'},
+  alex:{name:'Alex Rivera', team:'Budget Blitz', handle:'@alexr', tag:'AR', tone:'gold'},
+  priya:{name:'Priya Shah', team:'Cash Orbit', handle:'@priyashah', tag:'PS', tone:'pink'},
+  jordan:{name:'Jordan Lee', team:'Yield Theory', handle:'@jordanlee', tag:'JL', tone:'green'},
+  emma:{name:'Emma Brooks', team:'Debt Dodgers', handle:'@emmab', tag:'EB', tone:'gold'},
+  lucas:{name:'Lucas Park', team:'Late Fees FC', handle:'@lucasp', tag:'LP', tone:'violet'},
+};
+
+const colors = {
+  dining:'#8b5cf6', nightlife:'#ba7cff', entertainment:'#db95ff', shopping:'#f4c85b', subscriptions:'#ffde87', savings:'#69d9a7', investing:'#5fa4ff', bills:'#ff8a6d'
+};
+
+const monthData = {
+  '2026-11': {
+    title:'November 2026',
+    matchup:{
+      left:{person:'maya', efficiency:82.4, earned:'78.3', eligible:'95', projected:84.1, marginLabel:'Current leader', best:'Savings +3.0', note:'Projected to finish slightly ahead if dining and shopping stay within cap.'},
+      right:{person:'alex', efficiency:79.8, earned:'75.8', eligible:'95', projected:81.9, marginLabel:'Trailing', best:'Subscriptions +1.0', note:'Can still swing matchup with investing and entertainment.'},
+      positions:[
+        {name:'Dining out', left:[7.5,10], right:[8.4,10], delta:'Alex +0.9', sub:'Both stayed close to target; Alex exceeded budget by a smaller percentage.'},
+        {name:'Nightlife', left:[4.5,5], right:[3.7,5], delta:'Maya +0.8', sub:'Maya had one planned outing; Alex had two unplanned nights out.'},
+        {name:'Entertainment', left:[4.0,5], right:[4.8,5], delta:'Alex +0.8', sub:'Alex stayed under the cap while still using the category.'},
+        {name:'Shopping', left:[5.8,8], right:[6.1,8], delta:'Alex +0.3', sub:'Both are near the limit. One more discretionary purchase could swing this back.'},
+        {name:'Subscriptions', left:[6.2,7], right:[7.0,7], delta:'Alex +0.8', sub:'Alex has no surprise renewals this month.'},
+        {name:'Savings', left:[22.0,25], right:[18.0,25], delta:'Maya +4.0', sub:'Maya already moved $105 of a $120 target; Alex is behind his savings transfer pace.'},
+        {name:'Investing', left:[11.3,15], right:[12.8,15], delta:'Alex +1.5', sub:'Both have eligible investment capacity. Alex is closer to the monthly contribution target.'},
+        {name:'Bills & debt', left:[17.0,20], right:[15.0,20], delta:'Maya +2.0', sub:'Alex has one credit card payment still upcoming, so this remains projected.'},
+      ]
+    },
+    league:{
+      current:[
+        {a:'maya', b:'alex', left:82.4, right:79.8, projected:'Maya projected +2.2'},
+        {a:'jordan', b:'priya', left:88.1, right:85.3, projected:'Jordan projected +2.8'},
+        {a:'emma', b:'lucas', left:74.0, right:77.5, projected:'Lucas projected +3.5'},
+      ],
+      standings:[
+        {rank:1, prev:2, id:'jordan', record:'2-0', streak:'2W', pf:'176.2', pa:'164.9'},
+        {rank:2, prev:5, id:'maya', record:'2-0', streak:'2W', pf:'170.8', pa:'160.4'},
+        {rank:3, prev:1, id:'priya', record:'1-1', streak:'1L', pf:'169.0', pa:'168.3'},
+        {rank:4, prev:4, id:'alex', record:'1-1', streak:'1W', pf:'161.3', pa:'164.6'},
+        {rank:5, prev:3, id:'lucas', record:'0-2', streak:'2L', pf:'152.7', pa:'171.8'},
+        {rank:6, prev:6, id:'emma', record:'0-2', streak:'2L', pf:'149.1', pa:'160.1'},
+      ]
+    },
+    report:{
+      awards:[
+        {title:'Most Efficient Manager', winner:'Jordan Lee', detail:'88.1% · Yield Theory', body:'Strong savings discipline and the highest combined discretionary score.'},
+        {title:'Biggest Climb', winner:'Maya Chen', detail:'^3 places', body:'Moved from 5th to 2nd after back-to-back matchup wins.'},
+        {title:'Savings MVP', winner:'Maya Chen', detail:'22 / 25 pts', body:'Best savings contribution relative to affordable target.'},
+        {title:'Best Recovery', winner:'Alex Rivera', detail:'+5.2 projected', body:'Largest possible late-month swing if investing target is completed.'},
+      ],
+      actualVsPotential:{actual:82.4, points:'78.3 / 95', potential:90.3, plus:'+7.9', missed:[
+        {title:'Left on the bench: investing', text:'An additional affordable $20 contribution could add roughly +2.0 points.'},
+        {title:'Left on the bench: shopping discipline', text:'Skipping one discretionary purchase would recover about +1.7 points.'},
+        {title:'Left on the bench: subscriptions', text:'Pausing one unused renewal next month would protect up to +0.8 points.'},
+      ]},
+      leaders:[
+        {cat:'Dining out', who:'Alex Rivera', score:'8.4 / 10'},
+        {cat:'Savings', who:'Maya Chen', score:'22 / 25'},
+        {cat:'Investing', who:'Alex Rivera', score:'12.8 / 15'},
+        {cat:'Bills & debt', who:'Jordan Lee', score:'19 / 20'},
+      ]
+    },
+    finances:{
+      total:82.4,
+      slices:[
+        {key:'dining', name:'Dining out', points:7.5, outOf:10, desc:'Controlled restaurant and coffee spending against the official dining target.', tx:[
+          {label:'Torchy\'s Tacos', date:'11-06', amount:'−$14', note:'Counted toward dining efficiency.'},
+          {label:'Starbucks', date:'11-03', amount:'−$7', note:'Small spend; still within the dining lane.'},
+          {label:'Velvet Taco', date:'11-11', amount:'−$18', note:'Raised dining usage but preserved most position points.'},
+        ]},
+        {key:'nightlife', name:'Nightlife', points:4.5, outOf:5, desc:'One planned night out; no repeated weekend overspending.', tx:[
+          {label:'Hide Bar', date:'11-09', amount:'−$16', note:'Single nightlife event kept under the monthly lane.'},
+          {label:'Rideshare split', date:'11-09', amount:'−$7', note:'Associated with nightlife activity.'},
+        ]},
+        {key:'entertainment', name:'Entertainment', points:4.0, outOf:5, desc:'Moderate entertainment spend with room left in the target.', tx:[
+          {label:'AMC Theatres', date:'11-10', amount:'−$13', note:'Counted as entertainment.'},
+          {label:'Concert ticket deposit', date:'11-15', amount:'−$12', note:'Projected but still within range.'},
+        ]},
+        {key:'shopping', name:'Shopping', points:5.8, outOf:8, desc:'Near the cap — this category is the biggest drag on the current score.', tx:[
+          {label:'Target', date:'11-05', amount:'−$34', note:'Largest shopping transaction this month.'},
+          {label:'Amazon', date:'11-14', amount:'−$19', note:'Moved shopping closer to the cap.'},
+        ]},
+        {key:'subscriptions', name:'Subscriptions', points:6.2, outOf:7, desc:'Recurring charges are controlled, with one lower-value subscription active.', tx:[
+          {label:'Spotify', date:'11-03', amount:'−$5', note:'Small recurring subscription.'},
+          {label:'iCloud+', date:'11-07', amount:'−$3', note:'Expected essential digital subscription.'},
+        ]},
+        {key:'savings', name:'Savings', points:22.0, outOf:25, desc:'Strong net new savings progress relative to the official target.', tx:[
+          {label:'Transfer to savings', date:'11-02', amount:'−$75', note:'Eligible transfer to owned savings account.'},
+          {label:'Transfer to savings', date:'11-15', amount:'−$30', note:'Second contribution boosted this position significantly.'},
+        ]},
+        {key:'investing', name:'Investing', points:11.3, outOf:15, desc:'Eligible contributions only — unrealized gains do not count.', tx:[
+          {label:'Roth IRA deposit', date:'11-08', amount:'−$35', note:'Counted toward investing target.'},
+          {label:'Brokerage transfer', date:'11-18', amount:'−$10', note:'Eligible contribution, not performance-based.'},
+        ]},
+        {key:'bills', name:'Bills & debt', points:17.0, outOf:20, desc:'Scheduled obligations paid so far, with one remaining card deadline still upcoming.', tx:[
+          {label:'Campus Commons Apartments', date:'11-01', amount:'−$450', note:'Housing obligation satisfied.'},
+          {label:'Student card payment', date:'11-13', amount:'−$25', note:'Required payment kept the bills score healthy.'},
+        ]},
+      ]
+    }
+  },
+  '2026-10': {
+    title:'October 2026',
+    matchup:{
+      left:{person:'maya', efficiency:79.1, earned:'75.1', eligible:'95', projected:79.1, marginLabel:'Final', best:'Bills +4.0', note:'October is a completed month, so all values are final.'},
+      right:{person:'priya', efficiency:83.2, earned:'79.0', eligible:'95', projected:83.2, marginLabel:'Winner', best:'Dining +1.5', note:'Priya won with steadier shopping and entertainment discipline.'},
+      positions:[
+        {name:'Dining out', left:[7.9,10], right:[9.1,10], delta:'Priya +1.2', sub:'Priya stayed further under her official target.'},
+        {name:'Nightlife', left:[4.2,5], right:[4.8,5], delta:'Priya +0.6', sub:'Lower nightlife spend relative to plan.'},
+        {name:'Entertainment', left:[3.8,5], right:[4.6,5], delta:'Priya +0.8', sub:'Entertainment stayed controlled.'},
+        {name:'Shopping', left:[5.0,8], right:[6.5,8], delta:'Priya +1.5', sub:'Shopping overspend was Maya\'s main drag in October.'},
+        {name:'Subscriptions', left:[6.0,7], right:[6.4,7], delta:'Priya +0.4', sub:'Both managed subscriptions well.'},
+        {name:'Savings', left:[20.0,25], right:[19.0,25], delta:'Maya +1.0', sub:'Savings was Maya\'s strongest category.'},
+        {name:'Investing', left:[11.2,15], right:[10.8,15], delta:'Maya +0.4', sub:'Maya had a slightly better eligible contribution month.'},
+        {name:'Bills & debt', left:[17.0,20], right:[17.8,20], delta:'Priya +0.8', sub:'Priya had a fully settled month with no late activity.'},
+      ]
+    },
+    league:{ current:[], standings:[] },
+    report:{ awards:[], actualVsPotential:{actual:79.1, points:'75.1 / 95', potential:86.0, plus:'+6.9', missed:[]}, leaders:[] },
+    finances:{ total:79.1, slices:[] }
+  }
+};
+
+function toneClass(personId){return people[personId].tone}
+function toneColor(personId){return people[personId].tone==='gold'?'var(--gold-2)':'#d7c3ff'}
+function avatar(personId,size=''){ const p=people[personId]; return `<div class="avatar ${p.tone} ${size}">${p.tag}</div>`; }
+function orbRow(score,max,tone){
+  const ratio = score/max;
+  const full = Math.floor(ratio*5 + 1e-6);
+  const rem = ratio*5 - full;
+  const fills = [0,0,0,0,0].map((_,i)=> i<full ? 1 : (i===full?rem:0));
+  const sizes=['','medium','large','xl','xxl'];
+  return `<div class="bubble-row ${tone==='gold'?'gold-text':'violet-text'}">` + fills.map((f,i)=>{
+    if(f>=.99) return `<span class="bubble ${sizes[i]} filled"></span>`;
+    if(f<=.02) return `<span class="bubble ${sizes[i]}"></span>`;
+    const steps=[.2,.4,.6,.8,1];
+    const nearest=steps.reduce((a,b)=> Math.abs(b-f)<Math.abs(a-f)?b:a,.2);
+    return `<span class="bubble ${sizes[i]} partial" data-fill="${nearest.toFixed(1)}"></span>`;
+  }).join('') + `</div>`;
+}
+
+function renderMatchup(){
+  const d = monthData[appState.month].matchup;
+  const left = d.left, right=d.right;
+  return `
+  <div class="matchup-hero">
+    <div class="ticket you">
+      <div class="ticket-head">
+        <div>
+          <div class="eyebrow">Home ticket</div>
+          <div class="team-id">${avatar(left.person)}<div><h3>${people[left.person].team}</h3><div class="sub">${people[left.person].name} · ${people[left.person].handle}</div></div></div>
+        </div>
+        <span class="chip violet">${left.marginLabel}</span>
+      </div>
+      <div class="scoreline"><div><div class="score">${left.efficiency}<small>%</small></div><div class="sub">${left.earned} / ${left.eligible} points</div></div><div class="right"><div class="eyebrow">Projected</div><div class="score" style="font-size:32px">${left.projected}<small>%</small></div></div></div>
+      <div class="stat-stack">
+        <div class="mini-stat"><span>Best position</span><strong>${left.best}</strong></div>
+        <div class="mini-stat"><span>Read</span><strong>${left.note}</strong></div>
+      </div>
+    </div>
+    <div class="vs-bridge"><div class="vs-badge">VS</div></div>
+    <div class="ticket opponent">
+      <div class="ticket-head">
+        <div>
+          <div class="eyebrow">Away ticket</div>
+          <div class="team-id">${avatar(right.person)}<div><h3>${people[right.person].team}</h3><div class="sub">${people[right.person].name} · ${people[right.person].handle}</div></div></div>
+        </div>
+        <span class="chip gold">${right.marginLabel}</span>
+      </div>
+      <div class="scoreline"><div><div class="score">${right.efficiency}<small>%</small></div><div class="sub">${right.earned} / ${right.eligible} points</div></div><div class="right"><div class="eyebrow">Projected</div><div class="score" style="font-size:32px">${right.projected}<small>%</small></div></div></div>
+      <div class="stat-stack">
+        <div class="mini-stat"><span>Best position</span><strong>${right.best}</strong></div>
+        <div class="mini-stat"><span>Read</span><strong>${right.note}</strong></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-head"><div><h3>Financial position duels</h3><p>Each category behaves like a fantasy position. Opponents only see point contributions — not private dollar details.</p></div><span class="chip gold">8 scored positions</span></div>
+    <div class="panel panel-inner">
+      <div class="duel-list">
+        ${d.positions.map(pos=> `
+          <div class="duel">
+            <div class="duel-top">
+              <div class="player-side">
+                <div class="player-name">${people[left.person].name}</div>
+                <div class="points">${pos.left[0]} <span style="font-size:13px;color:var(--muted)">/ ${pos.left[1]} pts</span></div>
+                ${orbRow(pos.left[0],pos.left[1], people[left.person].tone)}
+              </div>
+              <div class="duel-center"><h4>${pos.name}</h4><div class="delta">${pos.delta}</div></div>
+              <div class="player-side right">
+                <div class="player-name">${people[right.person].name}</div>
+                <div class="points">${pos.right[0]} <span style="font-size:13px;color:var(--muted)">/ ${pos.right[1]} pts</span></div>
+                ${orbRow(pos.right[0],pos.right[1], people[right.person].tone)}
+              </div>
+            </div>
+            <div class="duel-foot"><span>${pos.sub}</span><span>${pos.left[1]} available points</span></div>
+          </div>`).join('')}
+      </div>
+    </div>
+  </div>`;
+}
+
+function carPositionLeft(value){ return 14 + ((Math.min(value,100)/100)*((50-18)-4))*1.0; }
+function carPositionRight(value){ return 14 + ((Math.min(value,100)/100)*((50-18)-4))*1.0; }
+function renderLeague(){
+  const d = monthData['2026-11'].league;
+  return `
+  <div class="section-head"><div><h3>Current month matchups</h3><p>Current head-to-heads appear above standings. The mirrored race bars show both teams pushing toward 100% efficiency from opposite ends.</p></div><span class="chip violet">Live comparison concept</span></div>
+  <div class="panel panel-inner">
+    <div class="current-matchups">
+      ${d.current.map(m=>`
+        <div class="race-match">
+          <div class="race-head"><strong>${people[m.a].team} vs ${people[m.b].team}</strong><span class="chip gold">${m.projected}</span></div>
+          <div class="race-teams">
+            <div class="race-team">${people[m.a].name}<div class="sub">${m.left}%</div></div>
+            <div>
+              <div class="race-track">
+                <div class="lane left"></div><div class="lane right"></div><div class="finish"></div>
+                <div class="car left" style="left:${14 + (m.left/100)*calcLeft()}px">${people[m.a].tag}</div>
+                <div class="car right" style="right:${14 + (m.right/100)*calcLeft()}px">${people[m.b].tag}</div>
+              </div>
+              <div class="lane-labels"><span>0 → ${m.left}%</span><span>${m.right}% ← 0</span></div>
+            </div>
+            <div class="race-team right">${people[m.b].name}<div class="sub">${m.right}%</div></div>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  </div>
+
+  <div class="section section-head"><div><h3>League standings</h3><p>Movement markers compare each manager's current rank to the previous month.</p></div><span class="chip gold">Month-over-month movement</span></div>
+  <div class="panel panel-inner"><div class="standings">${d.standings.map(row=>{
+    const diff = row.prev - row.rank;
+    const move = diff>0 ? `<div class="move up">^ ${diff}</div>` : diff<0 ? `<div class="move down">v ${Math.abs(diff)}</div>` : `<div class="move flat">—</div>`;
+    return `<div class="standing-row">
+      <div class="rank">${row.rank}${move}</div>
+      <div class="teamcell">${avatar(row.id)}<div class="team-meta"><strong>${people[row.id].team}</strong><span>${people[row.id].name}</span></div></div>
+      <div class="metric rec"><strong>${row.record}</strong><span>record</span></div>
+      <div class="metric streak"><strong>${row.streak}</strong><span>streak</span></div>
+      <div class="metric pf"><strong>${row.pf}</strong><span>PF</span></div>
+      <div class="metric pa"><strong>${row.pa}</strong><span>PA</span></div>
+    </div>`;
+  }).join('')}</div></div>`;
+}
+
+function renderReports(){
+  const d = monthData['2026-11'].report;
+  return `
+  <div class="report-hero">
+    <div class="panel panel-inner">
+      <div class="eyebrow">November league report</div>
+      <div class="big-stat" style="margin-top:8px"><div class="n">${d.actualVsPotential.actual}%</div><div class="desc">Actual efficiency for the selected manager. Report cards keep the fantasy framing, but the underlying math stays deterministic and traceable.</div></div>
+      <div class="section" style="margin-top:18px">
+        <div class="bench-card"><div><div class="eyebrow">Actual</div><strong>${d.actualVsPotential.points}</strong></div><div class="chip violet">Scored result</div></div>
+        <div class="bench-card" style="margin-top:12px"><div><div class="eyebrow">Feasible what-if</div><strong>${d.actualVsPotential.potential}%</strong></div><div class="chip gold">${d.actualVsPotential.plus} pts</div></div>
+      </div>
+    </div>
+    <div class="panel panel-inner">
+      <div class="section-head" style="margin:0 0 12px 0"><div><h3>Left on the bench</h3><p>Hypothetical but feasible improvements that do not change official results.</p></div></div>
+      <div class="duel-list">${d.actualVsPotential.missed.map(m=>`<div class="bench-card"><div><strong>${m.title}</strong><p class="sub" style="margin-top:6px">${m.text}</p></div><span class="chip gold">Potential</span></div>`).join('')}</div>
+    </div>
+  </div>
+
+  <div class="section-head"><div><h3>League awards</h3><p>Use fantasy-like awards, but ground each one in a concrete scoring rule.</p></div></div>
+  <div class="awards">${d.awards.map(a=>`<div class="award"><div class="title">${a.title}</div><h4>${a.winner}</h4><div class="chip gold" style="margin:6px 0 10px">${a.detail}</div><p>${a.body}</p></div>`).join('')}</div>
+
+  <div class="section report-grid">
+    <div class="panel panel-inner">
+      <div class="section-head" style="margin:0 0 14px 0"><div><h3>Category leaders</h3><p>Which managers led each financial position this month.</p></div></div>
+      <div class="duel-list">${d.leaders.map(l=>`<div class="bench-card"><div><strong>${l.cat}</strong><p class="sub" style="margin-top:6px">${l.who}</p></div><span class="chip violet">${l.score}</span></div>`).join('')}</div>
+    </div>
+    <div class="panel panel-inner">
+      <div class="section-head" style="margin:0 0 14px 0"><div><h3>Design rationale</h3><p>How this screen differs from a normal rounded dashboard.</p></div></div>
+      <div class="history-note" style="border-top:0;padding-top:0">
+        • Awards use pennant-like cards instead of flat rectangles.<br>
+        • “Left on the bench” keeps the fantasy metaphor for missed potential.<br>
+        • Actual vs feasible performance uses compact callout tickets instead of chart-heavy panels.<br>
+        • The palette test pushes violet into the background while gold marks competitive importance.
+      </div>
+    </div>
+  </div>`;
+}
+
+function donutSegments(slices){
+  const cx=160, cy=160, r=104, r0=62;
+  const total = slices.reduce((a,s)=>a+s.points,0);
+  let start = -Math.PI/2;
+  return slices.map(s=>{
+    const frac = s.points/total;
+    const end = start + frac*Math.PI*2;
+    const x1 = cx + r*Math.cos(start), y1 = cy + r*Math.sin(start);
+    const x2 = cx + r*Math.cos(end), y2 = cy + r*Math.sin(end);
+    const x3 = cx + r0*Math.cos(end), y3 = cy + r0*Math.sin(end);
+    const x4 = cx + r0*Math.cos(start), y4 = cy + r0*Math.sin(start);
+    const large = end-start > Math.PI ? 1 : 0;
+    const path = `M ${x1} ${y1} A ${r} ${r} 0 ${large} 1 ${x2} ${y2} L ${x3} ${y3} A ${r0} ${r0} 0 ${large} 0 ${x4} ${y4} Z`;
+    const mid = (start+end)/2;
+    const lx = cx + 133*Math.cos(mid), ly = cy + 133*Math.sin(mid);
+    start = end;
+    return {...s, path, lx, ly, share: (frac*100).toFixed(1)};
+  });
+}
+
+function renderFinances(){
+  const d = monthData['2026-11'].finances;
+  if(!appState.activeSlice || !d.slices.find(s=>s.key===appState.activeSlice)) appState.activeSlice = d.slices[0].key;
+  const active = d.slices.find(s=>s.key===appState.activeSlice);
+  const segs = donutSegments(d.slices);
+  return `
+  <div class="fin-grid">
+    <div class="panel panel-inner">
+      <div class="section-head" style="margin:0 0 14px 0"><div><h3>Interactive contribution pie</h3><p>Hover or tap a slice to inspect the activity history that created that part of the efficiency score.</p></div><span class="chip violet">Replaces circular loader</span></div>
+      <div class="pie-wrap">
+        <div class="pie-card">
+          <svg class="pie-svg" viewBox="0 0 320 320" aria-label="Financial contribution pie chart">
+            ${segs.map(seg=>`<path class="pie-seg" data-seg="${seg.key}" d="${seg.path}" fill="${colors[seg.key]}" stroke="rgba(18,8,29,.9)" stroke-width="3" opacity="${seg.key===active.key?1:.82}"></path>`).join('')}
+            <circle cx="160" cy="160" r="55" fill="rgba(17,9,30,.96)" stroke="rgba(255,255,255,.08)"/>
+            <text x="160" y="146" class="pie-center" style="font-size:13px;fill:#c8b5e7">Efficiency</text>
+            <text x="160" y="174" class="pie-center" style="font-size:34px;font-weight:800">${d.total}%</text>
+            <text x="160" y="198" class="pie-label" text-anchor="middle">hover a slice</text>
+          </svg>
+        </div>
+        <div class="legend">${d.slices.map(s=>`<div class="legend-item ${s.key===active.key?'active':''}" data-legend="${s.key}"><div style="display:flex;align-items:center;gap:10px"><span class="swatch" style="background:${colors[s.key]}"></span><div><strong>${s.name}</strong><div class="sub">${s.points} / ${s.outOf} pts</div></div></div><span class="chip gold">${(s.points/s.outOf*100).toFixed(0)}%</span></div>`).join('')}</div>
+      </div>
+    </div>
+    <div class="panel panel-inner">
+      <div class="history" id="historyPane">
+        <h4>${active.name}</h4>
+        <div class="intro">${active.desc}</div>
+        <div class="history-list">${active.tx.map(tx=>`<div class="history-item"><div class="top"><strong>${tx.label}</strong><span>${tx.amount}</span></div><p>${tx.date} · ${tx.note}</p></div>`).join('')}</div>
+        <div class="history-note">This interaction pattern turns the score visual into an explorable explanation: each contribution slice becomes a drill-down into the actual transactions or activities behind that category.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section grid-2">
+    <div class="panel panel-inner">
+      <div class="section-head" style="margin:0 0 14px 0"><div><h3>Why this feels better than a ring loader</h3><p>The chart supports explanation, not just decoration.</p></div></div>
+      <div class="history-note" style="border-top:0;padding-top:0">
+        • The pie immediately shows where the score is coming from.<br>
+        • Hover reveals the category-specific history that led to the contribution.<br>
+        • It doubles as an audit trail for judges or users who want to understand the math.<br>
+        • The gold/violet palette keeps it in the fantasy theme rather than fintech default green.
+      </div>
+    </div>
+    <div class="panel panel-inner">
+      <div class="section-head" style="margin:0 0 14px 0"><div><h3>Next visual layer</h3><p>How this page could evolve when connected to your real browser calculations.</p></div></div>
+      <div class="duel-list">
+        <div class="bench-card"><div><strong>Filter by month or live mode</strong><p class="sub" style="margin-top:6px">Swap between this month, finalized months, and offline/Nessie data.</p></div><span class="chip violet">Future</span></div>
+        <div class="bench-card"><div><strong>Category correction feed</strong><p class="sub" style="margin-top:6px">Show transaction recategorizations and how they changed the pie.</p></div><span class="chip violet">Future</span></div>
+        <div class="bench-card"><div><strong>Projected slice overlay</strong><p class="sub" style="margin-top:6px">Dashed outer ring for projected month-end contribution by category.</p></div><span class="chip violet">Future</span></div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function calcLeft(){ return 120; } // helper for static CSS-based lane size approximation
+
+// Signature hero and the ticket-per-ticket position lineup.
+function heroTicket(side, role){
+  const p=people[side.person];
+  const final = appState.month !== '2026-11';
+  return `<article class="ticket ${role}" aria-label="${p.team} matchup ticket">
+    <div class="hero-ticket-content">
+      <div class="ticket-rail"><span>${role==='you'?'HOME ADMISSION':'AWAY ADMISSION'}</span></div>
+      <div class="ticket-body">
+        <div class="ticket-head"><div><div class="eyebrow">${p.team} · ${final?'FINAL':'NOVEMBER 2026'}</div>
+          <div class="team-id">${avatar(side.person)}<div><h3>${p.name}</h3><div class="sub">${p.handle}</div></div></div></div>
+          <span class="chip gold">${side.marginLabel}</span>
+        </div>
+        <div class="scoreline"><div><div class="score">${side.efficiency}<small>%</small></div><div class="sub">${side.earned} / ${side.eligible} eligible pts</div></div>
+          <div style="text-align:right"><div class="eyebrow">${final?'Final':'Expected'}</div><div class="score" style="font-size:27px">${side.projected}<small>%</small></div></div>
+        </div>
+        <div class="stat-stack"><div class="mini-stat"><span>Best position</span><strong>${side.best}</strong></div>
+          <div class="mini-stat"><span>Match note</span><strong>${side.note}</strong></div>
+        </div>
+      </div>
+    </div>
+  </article>`;
+}
+function positionTicket(side, pos, number, role){
+  const p=people[side.person];
+  const nums=role==='left'?pos.left:pos.right;
+  const efficiency = nums[1]>0 ? 100*nums[0]/nums[1] : 0;
+  return `<article class="position-ticket" aria-label="${p.name}, ${pos.name}, ${nums[0]} of ${nums[1]} points">
+    <div class="position-ticket-inner"><div class="position-rail"><span>${String(number).padStart(2,'0')} · FINANCIAL POSITION</span></div>
+      <div class="position-ticket-body"><div class="player-name">${p.team}</div>
+        <div class="points">${nums[0]}<small> / ${nums[1]} pts</small></div>
+        ${orbRow(nums[0],nums[1],'violet')}
+        <div class="ticket-rate">${efficiency.toFixed(0)}% position efficiency</div>
+      </div></div>
+  </article>`;
+}
+function renderMatchup(){
+  const d=monthData[appState.month].matchup;
+  return `<div class="matchup-hero">
+      ${heroTicket(d.left,'you')}
+      <div class="vs-bridge"><div class="vs-badge">VS</div></div>
+      ${heroTicket(d.right,'opponent')}
+    </div>
+    <div class="hero-footer"><div class="status-strip"><span class="chip gold">${appState.month==='2026-11'?'Current month · Provisional':'Past month · Finalized'}</span><span class="chip violet">Monthly head-to-head</span></div>
+      <p class="callout">These tickets show normalized, comparable efficiency. Players' account balances and private budgets are never revealed to opponents.</p>
+    </div>
+    <div class="section"><div class="section-head"><div><h3>Financial positions</h3><p>Eight matched positions. Every pair is a mirrored gold admission ticket, with its own bubble score.</p></div><span class="chip gold">${d.positions.length} positions</span></div>
+    <div class="position-list">${d.positions.map((pos,i)=>`
+      <section class="position-duel">
+        <div class="position-heading"><h4>${pos.name}</h4><span>POSITION ${String(i+1).padStart(2,'0')} · ${pos.left[1]} AVAILABLE PTS</span></div>
+        <div class="position-tickets">${positionTicket(d.left,pos,i+1,'left')}
+          <div class="position-between"><strong>VS</strong><small>${pos.delta}</small></div>
+          ${positionTicket(d.right,pos,i+1,'right')}</div>
+        <div class="row-details"><span>Matchup scoring is based on each player's locked baseline.</span><button type="button" data-explain="${i}" aria-expanded="false">View scoring ↗</button></div>
+        <div class="position-explain" id="explain-${i}" hidden>${pos.sub}</div>
+      </section>`).join('')}</div></div>`;
+}
+// Top-down grand-prix race car. Direction is determined by mirrored lane styling.
+// Designed as embedded SVG (no remote image dependencies) to be crisp at all widths.
+function carArt(number){return `<svg class="grand-prix-car" viewBox="0 0 180 94" role="img" aria-label="Gold open-wheel race car number ${number}">
+ <ellipse cx="90" cy="48" rx="80" ry="23" fill="#190f35" opacity=".24"/>
+ <!-- Rear slicks and front slicks, visible outside body as on a real F1 car -->
+ <rect x="25" y="5" width="31" height="25" rx="7" fill="#1d1631" stroke="#493a56" stroke-width="2"/>
+ <rect x="25" y="64" width="31" height="25" rx="7" fill="#1d1631" stroke="#493a56" stroke-width="2"/>
+ <rect x="127" y="5" width="32" height="25" rx="7" fill="#1d1631" stroke="#493a56" stroke-width="2"/>
+ <rect x="127" y="64" width="32" height="25" rx="7" fill="#1d1631" stroke="#493a56" stroke-width="2"/>
+ <path d="M35 10 L46 10 M35 84 L46 84 M138 10 L149 10 M138 84 L149 84" stroke="#8a7a92" stroke-width="3" stroke-linecap="round"/>
+ <!-- Rear wing with end plates and aerodynamic slats -->
+ <path d="M8 15 L21 15 L23 78 L8 78Z" fill="#ffda66" stroke="#fff3b7" stroke-width="2"/>
+ <rect x="6" y="13" width="21" height="6" rx="2" fill="#fff4b8"/>
+ <rect x="6" y="75" width="21" height="6" rx="2" fill="#fff4b8"/>
+ <path d="M12 22 L12 71 M19 22 L19 71" stroke="#7b469e" stroke-width="2.5"/>
+ <!-- Chassis / sidepods -->
+ <path d="M23 38 L52 35 L72 24 L106 28 L121 35 L157 42 L167 47 L157 52 L121 59 L106 66 L72 70 L52 59 L23 56Z" fill="#ffd66c" stroke="#fff7c8" stroke-width="2.5" stroke-linejoin="round"/>
+ <path d="M57 33 L72 22 L104 26 L105 39 L65 40Z" fill="#ffe9a3" stroke="#a16cba" stroke-width="1.5"/>
+ <path d="M57 61 L72 72 L104 68 L105 55 L65 54Z" fill="#ffe9a3" stroke="#a16cba" stroke-width="1.5"/>
+ <path d="M65 28 L103 32 M65 66 L103 62" stroke="#a973bb" stroke-width="2" stroke-linecap="round"/>
+ <!-- Main top stripe and narrow tapered nose -->
+ <path d="M28 45 L69 41 L122 44 L167 47 L122 50 L69 53 L28 49Z" fill="#7c4bb4"/>
+ <path d="M120 45 L161 47 L120 49" fill="#fff0b5"/>
+ <!-- Cockpit, halo, and driver's helmet -->
+ <ellipse cx="86" cy="47" rx="19" ry="15" fill="#291744" stroke="#fff0ac" stroke-width="2.5"/>
+ <ellipse cx="82" cy="47" rx="10" ry="9" fill="#dcc7ff"/>
+ <path d="M75 37 L76 55 M97 37 L97 55 M75 37 Q88 28 97 37" fill="none" stroke="#efb844" stroke-width="4" stroke-linecap="round"/>
+ <!-- Racing number / sponsor plate -->
+ <rect x="107" y="35" width="20" height="24" rx="8" fill="#fff2c5"/>
+ <text x="117" y="51" text-anchor="middle" font-family="Inter,system-ui,sans-serif" font-weight="900" font-size="12" fill="#4e2b83">${number}</text>
+ <!-- Front wing, prominent endplates / splitter -->
+ <path d="M155 27 Q164 35 177 35 L177 59 Q164 59 155 67 L151 56 L151 38Z" fill="#ffe590" stroke="#fff8d2" stroke-width="2.5"/>
+ <path d="M157 32 L171 40 M157 62 L171 54" stroke="#7343a4" stroke-width="2"/>
+ <rect x="170" y="31" width="7" height="7" rx="2" fill="#7041a0"/>
+ <rect x="170" y="55" width="7" height="7" rx="2" fill="#7041a0"/>
+ </svg>`;}
+function renderLeague(){
+  const d=monthData['2026-11'].league;
+  return `<div class="section-head"><div><h3>Current month matchups</h3><p>Three races, six managers. Cars travel from opposing ends toward the 100% finish line.</p></div><span class="chip gold">November · Projections</span></div>
+   <div class="current-matchups">${d.current.map((m,i)=>`
+    <article class="race-match">
+      <div class="race-head"><strong>${people[m.a].team} <span style="color:#7d6490">vs</span> ${people[m.b].team}</strong><span class="chip gold">${m.projected}</span></div>
+      <div class="race-names"><span>${people[m.a].name}</span><span>${people[m.b].name}</span></div>
+      <div class="race-arena" aria-label="${people[m.a].name} ${m.left}% against ${people[m.b].name} ${m.right}%">
+        <div class="race-finish" aria-hidden="true"></div>
+        <div class="race-lane left"><div class="car-runway"><div class="race-car" style="--progress:${m.left}%">${carArt(String(i*2+1).padStart(2,'0'))}</div></div></div>
+        <div class="race-lane right"><div class="car-runway"><div class="race-car" style="--progress:${m.right}%">${carArt(String(i*2+2).padStart(2,'0'))}</div></div></div>
+      </div>
+      <div class="race-meter"><span>${people[m.a].team}: <strong>${m.left.toFixed(1)}%</strong></span><span>${people[m.b].team}: <strong>${m.right.toFixed(1)}%</strong></span></div>
+      <div class="race-caption"><span>← Starting line</span><span>100% finish · center</span><span>Starting line →</span></div>
+    </article>`).join('')}</div>
+    <div class="section"><div class="section-head"><div><h3>League standings</h3><p>Standings are ordered by completed monthly matchups; movement is relative to the previous monthly ranking.</p></div><span class="chip gold">↑ up / ↓ down</span></div>
+    <div class="panel panel-inner"><div class="standings">${d.standings.map(row=>{
+      const change=row.prev-row.rank;
+      const move=change>0?`<div class="move up">↑ ${change}</div>`:change<0?`<div class="move down">↓ ${Math.abs(change)}</div>`:`<div class="move flat">—</div>`;
+      return `<div class="standing-row ${row.id==='maya'?'highlight':''}">
+        <div class="rank">${row.rank}${move}</div>
+        <div class="teamcell">${avatar(row.id)}<div class="team-meta"><strong>${people[row.id].team}</strong><span>${people[row.id].name}</span></div></div>
+        <div class="metric rec"><strong>${row.record}</strong><span>record</span></div>
+        <div class="metric streak"><strong>${row.streak}</strong><span>streak</span></div>
+        <div class="metric pf"><strong>${row.pf}</strong><span>PF</span></div>
+        <div class="metric pa"><strong>${row.pa}</strong><span>PA</span></div>
+      </div>`}).join('')}</div></div></div>`;
+}
+// Pie means share of earned points, NOT a per-category efficiency ratio.
+function pieSegments(slices){
+  const cx=160,cy=160,r=118;
+  const total=slices.reduce((s,x)=>s+x.points,0);
+  let start=-Math.PI/2;
+  return slices.map(s=>{
+    const angle=2*Math.PI*s.points/total;
+    const end=start+angle;
+    const x1=cx+r*Math.cos(start),y1=cy+r*Math.sin(start);
+    const x2=cx+r*Math.cos(end),y2=cy+r*Math.sin(end);
+    const large=angle>Math.PI?1:0;
+    const path=`M ${cx} ${cy} L ${x1} ${y1} A ${r} ${r} 0 ${large} 1 ${x2} ${y2} Z`;
+    start=end;
+    return {...s,path,share:(s.points/total*100).toFixed(1)};
+  });
+}
+function historyTemplate(active){
+  const share=(100*active.points/monthData['2026-11'].finances.slices.reduce((a,c)=>a+c.points,0)).toFixed(1);
+  return `<div class="eyebrow">Contribution activity · ${share}% of earned points</div>
+    <h4 style="margin-top:5px">${active.name}</h4><div class="intro">${active.desc}</div>
+    <div class="financial-summary"><div><strong>${active.points} <span style="font-size:14px">/ ${active.outOf} pts</span></strong><p>${(100*active.points/active.outOf).toFixed(0)}% category efficiency</p></div><span class="chip gold">${share}% of total earned</span></div>
+    <div class="history-list">${active.tx.map(tx=>`<div class="history-item"><div class="top"><strong>${tx.label}</strong><span>${tx.amount}</span></div><p>${tx.date} · ${tx.note}</p></div>`).join('')}</div>
+    <div class="history-note">These activities explain the selected financial position. Savings transfers represent net verified contributions; they aren't discretionary purchases.</div>`;
+}
+function renderFinances(){
+  const d=monthData['2026-11'].finances;
+  const slices=d.slices;
+  if(!slices.find(s=>s.key===appState.activeSlice))appState.activeSlice=slices[0].key;
+  const active=slices.find(s=>s.key===appState.activeSlice);
+  const segments=pieSegments(slices);
+  const pieColors=['#7c4fac','#f8bf48','#f49960','#d997c0','#f4e39b','#4da390','#6379bd','#ba8e53'];
+  return `<div class="fin-grid">
+    <section class="panel panel-inner">
+      <div class="section-head"><div><h3>Where your score comes from</h3><p>Hover, focus, or tap a slice to reveal the underlying transaction and activity history.</p></div><span class="chip gold">Interactive financial pie</span></div>
+      <div class="financial-summary"><div><strong>${d.total}%</strong><p>Overall eligible financial efficiency</p></div><span class="chip gold">78.3 / 95 earned points</span></div>
+      <div class="pie-wrap"><div class="pie-card">
+        <svg class="pie-svg" viewBox="0 0 320 320" role="img" aria-label="Pie chart showing each category's share of earned financial points">
+          ${segments.map((s,i)=>`<path class="pie-seg ${s.key===active.key?'active':''}" tabindex="0" role="button" aria-label="${s.name}, ${s.points} earned points, ${s.share}% of total earned points" data-seg="${s.key}" d="${s.path}" fill="${pieColors[i]}"/>`).join('')}
+          <circle cx="160" cy="160" r="8" fill="#fff1c4" stroke="#563477" stroke-width="2" pointer-events="none"/>
+        </svg>
+      </div><div class="legend">${slices.map((s,i)=>`<button type="button" class="legend-item ${active.key===s.key?'active':''}" data-legend="${s.key}" aria-pressed="${active.key===s.key}">
+       <span style="display:flex;gap:9px;align-items:center"><span class="swatch" style="background:${pieColors[i]}"></span><span><strong>${s.name}</strong><span class="sub" style="display:block">${s.points} / ${s.outOf} pts</span></span></span><span class="chip gold">${Math.round(100*s.points/s.outOf)}%</span></button>`).join('')}</div></div>
+      <p class="pie-usage-note">Pie area = share of points earned. The percentage on each category is its own points-earned / points-available efficiency.</p>
+    </section>
+    <section class="panel panel-inner"><div class="section-head"><div><h3>Activity behind the score</h3><p>The selected slice becomes an explorable transaction and activity history.</p></div></div><div class="history" id="historyPane" aria-live="polite">${historyTemplate(active)}</div></section>
+  </div>
+  <div class="section report-grid">
+    <div class="panel panel-inner"><h3 style="margin:0 0 10px">Scoring transparency</h3><div class="history-note" style="padding-top:0;border:0">Each pie segment is tied to a fixed score contribution, not a decorative loading percentage. It can be drilled into via mouse, keyboard, or touch. Financial records remain private to the player.</div></div>
+    <div class="panel panel-inner"><h3 style="margin:0 0 10px">Prototype data</h3><div class="history-note" style="padding-top:0;border:0">This screen demonstrates the design using seeded transactions. Your existing Nessie and browser-side scoring functions remain the implementation source of truth when Codex integrates this design.</div></div>
+  </div>`;
+}
+function bindPieV3(){
+ const fin=monthData['2026-11'].finances;
+ function activate(key){
+   const slice=fin.slices.find(x=>x.key===key);if(!slice)return;
+   appState.activeSlice=key;
+   const pane=document.querySelector('#historyPane');if(pane)pane.innerHTML=historyTemplate(slice);
+   document.querySelectorAll('[data-legend]').forEach(x=>{const is=x.dataset.legend===key;x.classList.toggle('active',is);x.setAttribute('aria-pressed',String(is));});
+   document.querySelectorAll('.pie-seg').forEach(x=>x.classList.toggle('active',x.dataset.seg===key));
+ }
+ document.querySelectorAll('[data-legend]').forEach(x=>{
+   x.addEventListener('mouseenter',()=>activate(x.dataset.legend));
+   x.addEventListener('focus',()=>activate(x.dataset.legend));
+   x.addEventListener('click',()=>activate(x.dataset.legend));
+ });
+ document.querySelectorAll('.pie-seg').forEach(x=>{
+   x.addEventListener('mouseenter',()=>activate(x.dataset.seg));
+   x.addEventListener('focus',()=>activate(x.dataset.seg));
+   x.addEventListener('click',()=>activate(x.dataset.seg));
+   x.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();activate(x.dataset.seg)}});
+ });
+}
+
+function setPage(page){
+  appState.page = page;
+  document.querySelectorAll('.page').forEach(el=>el.classList.remove('active'));
+  document.getElementById(page+'Page').classList.add('active');
+  document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active', b.dataset.page===page));
+  const titles = {
+    matchup:['Ticket duels. Real rivalry.','Mirrored gold tickets for each financial position — the same color, two competitors, one percentage-based winner.'],
+    league:['League race day.','Current matchups first: gold racecars drive toward a checkered finish from opposite directions, followed by month-over-month rankings.'],
+    reports:['The monthly recap.','Gold pennants celebrate the managers who performed best, while missed opportunities stay separate from official matchup points.'],
+    finances:['Your financial playbook.','Select a real pie slice to inspect the categorized transactions and saving or investing activities behind its contribution.']
+  };
+  document.getElementById('pageTitle').textContent = titles[page][0];
+  document.getElementById('pageSubtitle').textContent = titles[page][1];
+}
+
+function renderAll(){
+  document.getElementById('matchupPage').innerHTML = renderMatchup();
+  document.getElementById('leaguePage').innerHTML = renderLeague();
+  document.getElementById('reportsPage').innerHTML = renderReports();
+  document.getElementById('financesPage').innerHTML = renderFinances();
+  setPage(appState.page);
+  bindPieV3();
+}
+
+function bindPie(){
+  document.querySelectorAll('[data-legend]').forEach(el=>el.addEventListener('mouseenter',()=>{appState.activeSlice=el.dataset.legend; renderAll();}));
+  document.querySelectorAll('.pie-seg').forEach(el=>{
+    el.addEventListener('mouseenter',()=>{appState.activeSlice=el.dataset.seg; renderAll();});
+    el.addEventListener('click',()=>{appState.activeSlice=el.dataset.seg; renderAll();});
+  });
+}
+
+document.querySelectorAll('.nav button').forEach(btn=>btn.addEventListener('click',()=>setPage(btn.dataset.page)));
+document.getElementById('monthSelect').addEventListener('change',e=>{ appState.month=e.target.value; renderAll(); });
+document.addEventListener('click',e=>{
+ const button=e.target.closest('[data-explain]');
+ if(!button)return;
+ const item=document.querySelector('#explain-'+button.dataset.explain);
+ if(!item)return;
+ item.hidden=!item.hidden;
+ button.setAttribute('aria-expanded', String(!item.hidden));
+ button.textContent=item.hidden?'View scoring ↗':'Hide scoring ↖';
+});
+renderAll();
+</script>
+</body>
+</html>

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { FinanceState } from "./useFinance";
 import {
   buildLeague,
@@ -11,7 +11,6 @@ import {
   publicScore,
   standings,
   winner,
-  type PublicScore,
 } from "../lib/competition/engine";
 import { monthlyReport } from "../lib/competition/reports";
 import {
@@ -19,118 +18,28 @@ import {
   netInvestmentContributionsCents,
   inPeriod,
 } from "../lib/finance/normalize";
-import { categoryLabel } from "../lib/finance/scoring";
-import { formatCents, round1 } from "../lib/finance/util";
+import { formatCents } from "../lib/finance/util";
 
-const colors = [
-  "#60d5c5",
-  "#a89aff",
-  "#e8b875",
-  "#81aef8",
-  "#e890ad",
-  "#a6d58d",
-];
-const name = (id: string) => {
-  const p = MEMBERS.find((p) => p.key === id)!;
-  return `${p.firstName} ${p.lastName}`;
-};
-const team = (id: string) =>
-  [
-    "The Compounders",
-    "Cashflow Kings",
-    "Margin Makers",
-    "Steady Climbers",
-    "The Rainy Days",
-    "Future Fund",
-  ][MEMBERS.findIndex((p) => p.key === id)];
-const label = (key: string) =>
-  ({ bills: "Bills & debt", savings: "Savings", investing: "Investing" })[
-    key
-  ] ?? categoryLabel(key);
+import {
+  Avatar,
+  playerName as name,
+  teamName as team,
+  positionLabel as label,
+} from "./competitionIdentity";
+import { MatchupTicket, PositionTicket } from "./MatchupTickets";
+import { MirroredRaceMatchups } from "./RaceMatchups";
+import { MonthNavigation } from "./MonthNavigation";
+import {
+  PotentialComparison,
+  defensiblePotential,
+} from "./PotentialComparison";
+import { rankMovement } from "../lib/competition/presentation";
 const pct = (n: number | null | undefined) => (n == null ? "—" : n.toFixed(1));
 const monthName = (m: string) =>
   new Date(`${m}-02T12:00:00`).toLocaleDateString("en-US", {
     month: "long",
     year: "numeric",
   });
-export function Avatar({ id }: { id: string }) {
-  return (
-    <span
-      className="avatar"
-      style={
-        {
-          "--player": colors[MEMBERS.findIndex((p) => p.key === id)],
-        } as CSSProperties
-      }
-    >
-      {name(id)
-        .split(" ")
-        .map((n) => n[0])
-        .join("")}
-    </span>
-  );
-}
-function Meter({
-  value,
-  color = "var(--good)",
-}: {
-  value: number;
-  color?: string;
-}) {
-  return (
-    <div className="competition-meter">
-      <span
-        style={{
-          width: `${Math.max(0, Math.min(100, value))}%`,
-          background: color,
-        }}
-      />
-    </div>
-  );
-}
-function ScoreIdentity({
-  id,
-  score,
-  projection,
-  side,
-}: {
-  id: string;
-  score: PublicScore;
-  projection?: PublicScore | null;
-  side: string;
-}) {
-  return (
-    <div className={`competitor ${side}`}>
-      <Avatar id={id} />
-      <p className="eyebrow">{team(id)}</p>
-      <h2>{name(id)}</h2>
-      <p className="score-phase">
-        {projection !== undefined
-          ? "Month-to-date efficiency"
-          : "Final efficiency"}
-      </p>
-      <div className="big-score">
-        {pct(score.efficiency)}
-        <span>%</span>
-      </div>
-      <p className="sub">
-        {round1(score.earned)} / {score.available} eligible pts ·{" "}
-        {pct(score.efficiency)} / 100
-      </p>
-      {projection !== undefined && (
-        <p className="projection">
-          Expected finish{" "}
-          <strong>
-            {projection
-              ? `${pct(projection.efficiency)}%`
-              : "Insufficient data"}
-          </strong>
-        </p>
-      )}
-    </div>
-  );
-}
-
 export function Competition({
   f,
   tab,
@@ -141,8 +50,19 @@ export function Competition({
   onFinances: () => void;
 }) {
   const [selectedMonth, setMonth] = useState("");
+  const [animatePeriod, setAnimatePeriod] = useState(false);
+  const changeMonth = (month: string) => {
+    setMonth(month);
+    setMatchId("");
+    setAnimatePeriod(true);
+  };
   const [matchId, setMatchId] = useState("");
   const [member, setMember] = useState<string | null>(null);
+  useEffect(() => {
+    if (!animatePeriod) return;
+    const timer = window.setTimeout(() => setAnimatePeriod(false), 650);
+    return () => window.clearTimeout(timer);
+  }, [selectedMonth, animatePeriod]);
   useEffect(() => {
     if (!member) return;
     const onKeyDown = (event: KeyboardEvent) => {
@@ -201,8 +121,21 @@ export function Competition({
   const active = month === f.month;
   const record = standings(
     MEMBERS.map((p) => p.key),
-    league.matches,
+    league.matches.filter((m) => m.month <= month),
   );
+  const latestFinal = league.matches
+    .filter((m) => m.status === "final" && m.month <= month)
+    .map((m) => m.month)
+    .sort()
+    .at(-1);
+  const previousRecord =
+    latestFinal &&
+    league.matches.some((m) => m.status === "final" && m.month < latestFinal)
+      ? standings(
+          MEMBERS.map((p) => p.key),
+          league.matches.filter((m) => m.month < latestFinal),
+        )
+      : [];
   const reportMonth = active ? league.months.at(-2)! : month;
   const report = monthlyReport(league, reportMonth);
   if (f.source.kind === "nessie")
@@ -210,10 +143,6 @@ export function Competition({
       <section className="card competition-empty">
         <span className="section-symbol">◈</span>
         <h2>No league joined</h2>
-        <p>
-          Your live financial dashboard is available. The competition demo uses
-          a separate, clearly labeled sample league.
-        </p>
         <button
           className="btn-primary"
           onClick={() => f.setSource({ kind: "sample", persona: "maya" })}
@@ -233,40 +162,31 @@ export function Competition({
             THE CAMPUS COLLECTIVE{" "}
             <span className="sample-label">SAMPLE LEAGUE</span>
           </p>
-          <h1>
-            {tab === "Matchup"
-              ? "Small moves. Big matchups."
-              : tab === "League"
-                ? "Every month counts."
-                : "Your month, in perspective."}
-          </h1>
-          <p className="sub">
-            {tab === "Matchup"
-              ? "Your circumstances. Your targets. An even playing field."
-              : tab === "League"
-                ? "Six different financial lives. One fair measure of progress."
-                : "The wins, the lessons, and the points left on the bench."}
-          </p>
+          <h1>{tab}</h1>
         </div>
-        <label className="month-picker">
-          <span>{tab === "Reports" ? "Report period" : "Matchup period"}</span>
-          <select
-            aria-label="Competition month"
-            value={tab === "Reports" ? reportMonth : month}
-            onChange={(e) => {
-              setMonth(e.target.value);
-              setMatchId("");
-            }}
-          >
-            {league.months
-              .filter((m) => tab !== "Reports" || m !== f.month)
-              .map((m) => (
-                <option key={m} value={m}>
-                  {monthName(m)}
-                </option>
-              ))}
-          </select>
-        </label>
+        {tab === "Matchup" ? (
+          <MonthNavigation
+            months={league.months}
+            value={month}
+            onChange={changeMonth}
+          />
+        ) : (
+          <label className="month-picker">
+            <select
+              aria-label="Competition month"
+              value={tab === "Reports" ? reportMonth : month}
+              onChange={(e) => changeMonth(e.target.value)}
+            >
+              {league.months
+                .filter((m) => tab !== "Reports" || m !== f.month)
+                .map((m) => (
+                  <option key={m} value={m}>
+                    {monthName(m)}
+                  </option>
+                ))}
+            </select>
+          </label>
+        )}
       </div>
       {tab === "Matchup" && (
         <>
@@ -275,7 +195,7 @@ export function Competition({
               <div className="section-top">
                 <span className={`live-status ${active ? "" : "closed"}`}>
                   <i />
-                  {active ? "IN PROGRESS · PROJECTED" : "FINAL RESULT"}
+                  {active ? "Provisional" : "Final"}
                 </span>
                 <select
                   aria-label="Select matchup"
@@ -290,12 +210,8 @@ export function Competition({
                 </select>
               </div>
               <section className="matchup-hero">
-                <div className="hero-topline">
-                  <span>{monthName(month)}</span>
-                  <span>MONTHLY HEAD-TO-HEAD</span>
-                </div>
                 <div className="competitors">
-                  <ScoreIdentity
+                  <MatchupTicket
                     id={match.a}
                     score={match.scores[match.a]}
                     side="home"
@@ -310,7 +226,7 @@ export function Competition({
                     }
                   />
                   <div className="versus">VS</div>
-                  <ScoreIdentity
+                  <MatchupTicket
                     id={match.b}
                     score={match.scores[match.b]}
                     side="away"
@@ -335,88 +251,49 @@ export function Competition({
               </section>
               <div className="section-title">
                 <div>
-                  <p className="eyebrow">YOUR FINANCIAL LINEUP</p>
-                  <h2>Eight positions. Every point matters.</h2>
+                  <h2>Financial positions</h2>
                 </div>
-                <span className="hint">Tap a position for details</span>
               </div>
               <PositionRows
                 a={league.periods[month][match.a]}
                 b={league.periods[month][match.b]}
                 viewer={player}
                 active={active}
+                period={month}
+                animate={animatePeriod}
               />
             </div>
-            <aside className="competition-aside">
-              <section className="card">
-                <p className="eyebrow">THE LONG GAME</p>
-                <h2>League snapshot</h2>
-                <p className="hint">Final records · previous three months</p>
-                {record.slice(0, 4).map((r) => (
-                  <button
-                    className={`mini-standing ${r.id === player ? "selected" : ""}`}
-                    key={r.id}
-                    onClick={() => setMember(r.id)}
-                  >
-                    <span>{r.rank}</span>
-                    <Avatar id={r.id} />
-                    <span>
-                      <strong>{name(r.id)}</strong>
-                      <small>{team(r.id)}</small>
-                    </span>
-                    <b>
-                      {r.wins}–{r.losses}–{r.ties}
-                    </b>
-                  </button>
-                ))}
-              </section>
-              <section className="card fairness">
-                <span className="section-symbol">◎</span>
-                <h2>Efficiency is the equalizer.</h2>
-                <p>
-                  A bigger paycheck doesn’t buy a better score. You compete
-                  against your own locked financial baseline.
-                </p>
-                <button className="link" onClick={onFinances}>
-                  Explore your finances →
-                </button>
-              </section>
-              <section className="card">
-                <h2>How projections work</h2>
-                <p className="hint">
-                  {league.periods[month][player].projection.confidence}
-                </p>
-                <ul className="assumptions">
-                  {league.periods[month][player].projection.assumptions.map(
-                    (s) => (
-                      <li key={s}>{s}</li>
-                    ),
-                  )}
-                </ul>
-              </section>
-            </aside>
+            <details className="card scoring-help">
+              <summary>How scoring works</summary>
+              <p>
+                Efficiency = earned eligible points / available points. Opponent
+                budgets and transactions stay private.
+              </p>
+              <p>{league.periods[month][player].projection.confidence}</p>
+              <ul>
+                {league.periods[month][player].projection.assumptions.map(
+                  (s) => (
+                    <li key={s}>{s}</li>
+                  ),
+                )}
+              </ul>
+            </details>
           </div>
         </>
       )}
       {tab === "League" && (
         <>
-          <div className="league-banner">
-            <span className="league-crest">♜</span>
-            <div>
-              <p className="eyebrow">2026 SEASON · 6 MEMBERS</p>
-              <h2>The Campus Collective</h2>
-              <p className="sub">
-                Built on better habits. Settled one month at a time.
-              </p>
-            </div>
-            <span className="sample-label">LOCAL DEMO</span>
-          </div>
+          <MirroredRaceMatchups league={league} month={month} />
           <section className="card standings">
             <div className="section-title">
-              <h2>Season standings</h2>
-              <span className="hint">
-                Finalized months only · PF / PA use normalized efficiency
-              </span>
+              <h2>Standings</h2>
+              <details className="inline-help">
+                <summary aria-label="Standings information">ⓘ</summary>
+                <p>
+                  Finalized results only. PF/PA use normalized efficiency.
+                  Movement compares the previous finalized ranking.
+                </p>
+              </details>
             </div>
             <div className="table-wrap">
               <table className="table">
@@ -436,7 +313,24 @@ export function Competition({
                       key={r.id}
                       className={r.id === player ? "selected-row" : ""}
                     >
-                      <td className="rank">{r.rank}</td>
+                      <td className="rank">
+                        {r.rank}
+                        <span
+                          className={`rank-move ${(rankMovement(r.id, record, previousRecord) ?? 0) > 0 ? "up" : (rankMovement(r.id, record, previousRecord) ?? 0) < 0 ? "down" : "flat"}`}
+                          aria-label={
+                            rankMovement(r.id, record, previousRecord) === null
+                              ? "No previous ranking"
+                              : `Rank movement ${rankMovement(r.id, record, previousRecord)}`
+                          }
+                        >
+                          {(rankMovement(r.id, record, previousRecord) ?? 0) > 0
+                            ? `↑ ${rankMovement(r.id, record, previousRecord)}`
+                            : (rankMovement(r.id, record, previousRecord) ??
+                                  0) < 0
+                              ? `↓ ${Math.abs(rankMovement(r.id, record, previousRecord)!)}`
+                              : "—"}
+                        </span>
+                      </td>
                       <td>
                         <button
                           className="manager-button"
@@ -470,11 +364,8 @@ export function Competition({
           </section>
           {active && (
             <section className="card">
-              <h2>Live month · provisional leaderboard</h2>
-              <p className="hint">
-                These month-to-date scores do not change finalized season
-                records.
-              </p>
+              <h2>Provisional standings</h2>
+
               <div className="provisional-list">
                 {Object.entries(league.periods[f.month])
                   .sort(
@@ -499,56 +390,51 @@ export function Competition({
               </div>
             </section>
           )}
-          <section className="card">
-            <h2>
-              {active
-                ? "Current matchups"
-                : `${monthName(month)} · past matchups`}
-            </h2>
-            <MatchCards league={league} month={month} />
-          </section>
         </>
       )}
       {tab === "Reports" && report && (
         <>
-          <div className="report-banner">
-            <p className="eyebrow">
-              THE MONTHLY RECAP · FINALIZED SAMPLE RECORDS
-            </p>
-            <h2>{monthName(reportMonth)}</h2>
-            <p>
-              Good habits made the difference. Here’s how the month played out.
-            </p>
+          <div className="section-title">
+            <h2>League awards</h2>
+            <span className="report-status">Final</span>
           </div>
           <div className="awards-grid">
-            {report.awards.map((a, i) => (
-              <button
-                className="award-card"
-                key={a.title}
-                onClick={() => setMember(a.id)}
-              >
-                <div>
-                  <span className="award-icon">
-                    {["♜", "◇", "↗", "◎", "↑", "◈"][i]}
-                  </span>
-                  <p className="eyebrow">{a.title}</p>
-                </div>
-                <div className="award-person">
-                  <Avatar id={a.id} />
-                  <span>
-                    <strong>{name(a.id)}</strong>
-                    <small>{team(a.id)}</small>
-                  </span>
-                  <b>{a.value}</b>
-                </div>
-                <p className="hint">{a.why}</p>
-              </button>
-            ))}
+            {report.awards
+              .filter(
+                (a) =>
+                  a.title !== "Points left on the bench" ||
+                  defensiblePotential(
+                    report.players.find((p) => p.id === a.id)!,
+                  ) !== null,
+              )
+              .map((a, i) => (
+                <button
+                  className="award-card"
+                  key={a.title}
+                  onClick={() => setMember(a.id)}
+                  title={a.why}
+                  aria-label={`${a.title}: ${name(a.id)}, ${a.value}. ${a.why}`}
+                >
+                  <div>
+                    <span className="award-icon">
+                      {["♜", "◇", "↗", "◎", "↑", "◈"][i]}
+                    </span>
+                    <p className="eyebrow">{a.title}</p>
+                  </div>
+                  <div className="award-person">
+                    <Avatar id={a.id} />
+                    <span>
+                      <strong>{name(a.id)}</strong>
+                      <small>{team(a.id)}</small>
+                    </span>
+                    <b>{a.value}</b>
+                  </div>
+                </button>
+              ))}
           </div>
           <section className="card">
             <div className="section-title">
-              <h2>The matchups</h2>
-              <span className="hint">Official final results</span>
+              <h2>Final matchups</h2>
             </div>
             <MatchCards league={league} month={reportMonth} />
             <div className="report-facts">
@@ -560,9 +446,7 @@ export function Competition({
                       {name(report.margins[0].match.a)} vs{" "}
                       {name(report.margins[0].match.b)}
                     </strong>
-                    <small>
-                      {pct(report.margins[0].margin)} normalized points apart
-                    </small>
+                    <small>{pct(report.margins[0].margin)} pts apart</small>
                   </p>
                   <p>
                     <span>Largest margin</span>
@@ -588,8 +472,7 @@ export function Competition({
           <section>
             <div className="section-title">
               <div>
-                <p className="eyebrow">POSITION LEADERS</p>
-                <h2>A strong lineup starts with good habits.</h2>
+                <h2>Position leaders</h2>
               </div>
             </div>
             <div className="position-leaders">
@@ -612,68 +495,7 @@ export function Competition({
               ))}
             </div>
           </section>
-          <section className="card">
-            <div className="section-title">
-              <div>
-                <p className="eyebrow">ACTUAL VS FEASIBLE WHAT-IF</p>
-                <h2>Points left on the bench</h2>
-              </div>
-              <span className="sample-label">
-                HYPOTHETICAL · DOES NOT CHANGE RESULTS
-              </span>
-            </div>
-            <p className="hint">
-              Cash after obligations, minimum floor and reserves; savings first,
-              then eligible investing. No assumed market returns. Sample account
-              balances are fixture snapshots.
-            </p>
-            {[...report.players]
-              .sort(
-                (a, b) =>
-                  (b.result.score.efficiencyPct ?? 0) -
-                  (a.result.score.efficiencyPct ?? 0),
-              )
-              .map((p) => (
-                <div className="potential-row" key={p.id}>
-                  <button
-                    className="manager-button"
-                    onClick={() => setMember(p.id)}
-                  >
-                    <Avatar id={p.id} />
-                    <span>
-                      <strong>{name(p.id)}</strong>
-                      <small>
-                        {round1(p.result.score.earnedPoints)} /{" "}
-                        {p.result.score.availablePoints} pts
-                      </small>
-                    </span>
-                  </button>
-                  <div>
-                    <div className="potential-label">
-                      <span>Actual {pct(p.result.score.efficiencyPct)}%</span>
-                      <strong>
-                        What-if{" "}
-                        {p.potential.sufficientData
-                          ? `${pct(p.potential.efficiency)}%`
-                          : "Insufficient data"}
-                      </strong>
-                    </div>
-                    <Meter
-                      value={p.potential.efficiency ?? 0}
-                      color="var(--warn)"
-                    />
-                    <Meter value={p.result.score.efficiencyPct ?? 0} />
-                  </div>
-                  <b>+{pct(p.potential.gain)} pts</b>
-                </div>
-              ))}
-          </section>
-          <PersonalReport
-            league={league}
-            month={reportMonth}
-            player={player}
-            onFinances={onFinances}
-          />
+          <PotentialComparison report={report} onMember={setMember} />
         </>
       )}
       {tab === "Reports" && !report && (
@@ -699,7 +521,7 @@ export function Competition({
             </button>
             <Avatar id={member} />
             <h2>{name(member)}</h2>
-            <p className="sub">{team(member)} · public competitive metrics</p>
+            <p className="sub">{team(member)} · Public</p>
             <p>
               {record.find((r) => r.id === member)?.wins} wins ·{" "}
               {record.find((r) => r.id === member)?.losses} losses
@@ -758,18 +580,15 @@ function MatchVerdict({
   return (
     <div className="match-verdict">
       {av == null || bv == null ? (
-        "Insufficient data to project a leader."
+        "Projection unavailable"
       ) : av === bv ? (
         `${active ? "Projected" : "Final"} tie`
       ) : (
         <>
           <span>↗</span> <strong>{name(av > bv ? a : b)}</strong>{" "}
-          {active ? "is projected to lead" : "wins"} by{" "}
+          {active ? "· Projected lead" : "wins"} ·{" "}
           <strong>{Math.abs(av - bv).toFixed(1)} pts</strong>
         </>
-      )}
-      {active && (
-        <small>Projection, not an official result or win probability.</small>
       )}
     </div>
   );
@@ -779,11 +598,15 @@ function PositionRows({
   b,
   viewer,
   active,
+  period,
+  animate,
 }: {
   a: PlayerPeriod;
   b: PlayerPeriod;
   viewer: string;
   active: boolean;
+  period: string;
+  animate: boolean;
 }) {
   const left = positions(a.result.score),
     right = positions(b.result.score);
@@ -811,73 +634,52 @@ function PositionRows({
         return (
           <details className="position-row" key={l.key}>
             <summary>
-              <div
-                className={`position-score ${lp != null && rp != null && lp > rp ? "leading" : ""}`}
-              >
-                <strong>
-                  {l.eligible
-                    ? `${pct(l.earned)} / ${pct(l.available)}`
-                    : "Not scored"}
-                </strong>
-                <small>
-                  {lp === null ? "Ineligible" : `${pct(lp)}% efficiency`}
-                </small>
-                <Meter value={lp ?? 0} />
-                {active && (
-                  <small>
-                    Projected{" "}
-                    {leftProjection?.eligible
-                      ? pct(leftProjection.earned) + " pts"
-                      : "—"}
-                  </small>
-                )}
+              <div className="position-heading">
+                <h3>{label(l.key)}</h3>
+                <span>POSITION {String(i + 1).padStart(2, "0")}</span>
               </div>
-              <div className="position-name">
-                <span className="position-symbol">
-                  {["↗", "☾", "◈", "◇", "↻", "↓", "⌁", "✓"][i]}
-                </span>
-                <strong>{label(l.key)}</strong>
-                <small>
-                  {lp != null && rp != null
-                    ? lp === rp
-                      ? "Even"
-                      : `${lp > rp ? a.spec.firstName : b.spec.firstName} leads · ${pct(Math.abs(lp - rp))} pp`
-                    : "Eligibility adjusted"}{" "}
-                  <span aria-hidden>⌄</span>
-                </small>
-              </div>
-              <div
-                className={`position-score right ${lp != null && rp != null && rp > lp ? "leading" : ""}`}
-              >
-                <strong>
-                  {r.eligible
-                    ? `${pct(r.earned)} / ${pct(r.available)}`
-                    : "Not scored"}
-                </strong>
-                <small>
-                  {rp === null ? "Ineligible" : `${pct(rp)}% efficiency`}
-                </small>
-                <Meter value={rp ?? 0} color="var(--rival)" />
-                {active && (
+              <div className="position-tickets">
+                <PositionTicket
+                  id={a.spec.key}
+                  position={l}
+                  index={i}
+                  projected={leftProjection}
+                  active={active}
+                  period={period}
+                  animate={animate}
+                />
+                <div className="position-between">
+                  <strong>VS</strong>
                   <small>
-                    Projected{" "}
-                    {rightProjection?.eligible
-                      ? pct(rightProjection.earned) + " pts"
-                      : "—"}
+                    {lp != null && rp != null
+                      ? lp === rp
+                        ? "Tied"
+                        : `${lp > rp ? a.spec.firstName : b.spec.firstName} +${pct(Math.abs(lp - rp))} pp`
+                      : "Ineligible"}
                   </small>
-                )}
+                </div>
+                <PositionTicket
+                  id={b.spec.key}
+                  position={r}
+                  index={i}
+                  projected={rightProjection}
+                  active={active}
+                  period={period}
+                  animate={animate}
+                />
+              </div>
+              <div className="row-details">
+                <span className="view-scoring">Scoring details ↗</span>
               </div>
             </summary>
             <div className="position-detail">
               <p>
                 {ownLine?.explanation ??
-                  "Public competitive metrics only. Select your own matchup to view private financial details."}
+                  "Public scores only. Private details are available in your own matchup."}
               </p>
               {own && budget && (
                 <>
-                  <p className="eyebrow">
-                    YOUR PRIVATE BREAKDOWN · {name(viewer)}
-                  </p>
+                  <p className="eyebrow">PRIVATE · {name(viewer)}</p>
                   {cat ? (
                     <p>
                       Official target {formatCents(cat.budgetCents)} · posted
@@ -910,7 +712,7 @@ function PositionRows({
                               ),
                             ),
                       )}
-                      . {ownLine?.explanation}
+                      .
                     </p>
                   ) : (
                     <p>
@@ -923,7 +725,7 @@ function PositionRows({
                       ? `${pct(ownLine.earned)} / ${pct(ownLine.available)} points earned.`
                       : "Not independently scored."}{" "}
                     {active && ownProjection
-                      ? `Projected change: ${pct(ownProjection.earned - (ownLine?.earned ?? 0))} pts. Up to ${pct(Math.max(0, (ownLine?.available ?? 0) - (ownLine?.earned ?? 0)))} points remain theoretically available; affordability may limit attainable gains.`
+                      ? `Projected change: ${pct(ownProjection.earned - (ownLine?.earned ?? 0))} pts. Unclaimed: ${pct(Math.max(0, (ownLine?.available ?? 0) - (ownLine?.earned ?? 0)))} pts (theoretical).`
                       : ""}
                   </p>
                 </>
@@ -966,80 +768,5 @@ function MatchCards({ league, month }: { league: DemoLeague; month: string }) {
           </div>
         ))}
     </div>
-  );
-}
-function PersonalReport({
-  league,
-  month,
-  player,
-  onFinances,
-}: {
-  league: DemoLeague;
-  month: string;
-  player: string;
-  onFinances: () => void;
-}) {
-  const report = monthlyReport(league, month)!;
-  const p = report.players.find((p) => p.id === player)!;
-  const lines = positions(p.result.score)
-    .filter((l) => l.eligible && l.available > 0)
-    .sort((a, b) => b.earned / b.available - a.earned / a.available);
-  const improvement = report.improvements.find((i) => i.id === player);
-  return (
-    <section className="card personal-report">
-      <div className="section-title">
-        <div>
-          <p className="eyebrow">YOUR PRIVATE MONTHLY REPORT</p>
-          <h2>
-            {name(player)} · {monthName(month)}
-          </h2>
-        </div>
-        <Avatar id={player} />
-      </div>
-      <p>
-        You finished at{" "}
-        <strong>{pct(p.result.score.efficiencyPct)}% efficiency</strong>.{" "}
-        {lines[0] &&
-          `${label(lines[0].key)} was your strongest position; ${label(lines.at(-1)!.key)} had the most room to improve.`}{" "}
-        {improvement
-          ? `You improved ${pct(improvement.delta)} normalized points over last month.`
-          : ""}
-      </p>
-      <div className="public-breakdown">
-        {positions(p.result.score).map((l) => (
-          <p key={l.key}>
-            <span>{label(l.key)}</span>
-            <strong>
-              {l.eligible
-                ? `${pct(l.earned)} / ${pct(l.available)} pts · ${pct((l.earned / l.available) * 100)}%`
-                : "Not scored"}
-            </strong>
-          </p>
-        ))}
-      </div>
-      <h3>Feasible missed opportunities · hypothetical</h3>
-      {p.potential.opportunities.length ? (
-        p.potential.opportunities.map((o) => (
-          <div className="opportunity" key={o.category}>
-            <strong>
-              {label(o.category)} left on the bench · +{pct(o.points)} pts
-            </strong>
-            <p>
-              {formatCents(o.amountCents)} in additional contributions.{" "}
-              {o.explanation}
-            </p>
-          </div>
-        ))
-      ) : (
-        <p className="hint">
-          {p.potential.sufficientData
-            ? "No additional affordable contribution opportunities identified under this conservative policy."
-            : "Insufficient cash data for a feasible what-if calculation."}
-        </p>
-      )}
-      <button className="link" onClick={onFinances}>
-        Review your current finances →
-      </button>
-    </section>
   );
 }

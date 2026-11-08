@@ -47,6 +47,45 @@ export type PlayerPeriod = {
   input: ScoreInput;
   projection: ReturnType<typeof projectMonthEndScore>;
 };
+/** Reuses the same settled sample period for league and owner history. */
+export function buildSamplePeriod(
+  spec: PersonaSpec,
+  month: string,
+  asOf: string,
+) {
+  const active = month === asOf.slice(0, 7);
+  // Generate through month end for closed periods, then finalize after close.
+  const data = nessieToProviderData(
+    generatePersonaBundle(spec, active ? asOf : monthEnd(month)),
+    "seed",
+  );
+  if (!active)
+    data.transactions = data.transactions.map((t) => ({
+      ...t,
+      pending: false,
+    }));
+  const result = runFinancePipeline({
+    data,
+    asOf: active ? asOf : monthEnd(month),
+    now: `${month}-01T00:00:00Z`,
+  });
+  const input: ScoreInput = {
+    profile: result.profile,
+    baseline: result.baseline,
+    transactions: result.transactions,
+    accounts: data.accounts,
+    obligations: data.obligations,
+    scoringPeriod: {
+      month,
+      asOf: active ? asOf : `${addMonths(month, 1)}-01`,
+    },
+  };
+  return {
+    data,
+    result: { ...result, score: calculateEfficiencyScore(input) },
+    input,
+  };
+}
 export function buildLeague(
   asOf: string,
   selected?: { key: string; result: PipelineResult; input: ScoreInput },
@@ -59,32 +98,7 @@ export function buildLeague(
     periods[month] = {};
     for (const spec of MEMBERS) {
       const active = month === currentMonth;
-      // Generate through month end for closed periods, then finalize after close.
-      const data = nessieToProviderData(
-        generatePersonaBundle(spec, active ? asOf : monthEnd(month)),
-        "seed",
-      );
-      if (!active)
-        data.transactions = data.transactions.map((t) => ({
-          ...t,
-          pending: false,
-        }));
-      let result = runFinancePipeline({
-        data,
-        asOf: active ? asOf : monthEnd(month),
-        now: `${month}-01T00:00:00Z`,
-      });
-      let input: ScoreInput = {
-        profile: result.profile,
-        baseline: result.baseline,
-        transactions: result.transactions,
-        accounts: data.accounts,
-        obligations: data.obligations,
-        scoringPeriod: {
-          month,
-          asOf: active ? asOf : `${addMonths(month, 1)}-01`,
-        },
-      };
+      let { result, input } = buildSamplePeriod(spec, month, asOf);
       if (active && selected?.key === spec.key) {
         result = selected.result;
         input = selected.input;
