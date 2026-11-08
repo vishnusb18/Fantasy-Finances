@@ -8,9 +8,89 @@ import {
   t as __t,
   type AlgebraicTypeType as __AlgebraicTypeType,
   type Infer as __Infer,
-} from 'spacetimedb';
+} from "spacetimedb";
 
-export const Person = __t.object('Person', {
-  name: __t.string(),
+export const CategoryOverride = __t.object("CategoryOverride", {
+  id: __t.u64(),
+  owner: __t.identity(),
+  playerKey: __t.string(),
+  transactionId: __t.string(),
+  category: __t.string(),
+  correctedAt: __t.timestamp(),
 });
-export type Person = __Infer<typeof Person>;
+export type CategoryOverride = __Infer<typeof CategoryOverride>;
+
+export const CategoryResult = __t.object("CategoryResult", {
+  category: __t.string(),
+  eligible: __t.bool(),
+  earned: __t.f64(),
+  available: __t.f64(),
+});
+export type CategoryResult = __Infer<typeof CategoryResult>;
+
+export const LeaguePlayer = __t.object("LeaguePlayer", {
+  id: __t.u64(),
+  owner: __t.identity(),
+  playerKey: __t.string(),
+  displayName: __t.string(),
+  source: __t.string(),
+  updatedAt: __t.timestamp(),
+});
+export type LeaguePlayer = __Infer<typeof LeaguePlayer>;
+
+export const MonthState = __t.object("MonthState", {
+  id: __t.u64(),
+  owner: __t.identity(),
+  playerKey: __t.string(),
+  month: __t.string(),
+  baselineId: __t.string(),
+  baselineJson: __t.string(),
+  baselineLockedAt: __t.timestamp(),
+  revisionReason: __t.option(__t.string()),
+  personalBudgetJson: __t.option(__t.string()),
+  updatedAt: __t.timestamp(),
+});
+export type MonthState = __Infer<typeof MonthState>;
+
+export const MyCategoryOverride = __t.object("MyCategoryOverride", {});
+export type MyCategoryOverride = __Infer<typeof MyCategoryOverride>;
+
+export const MyMonthState = __t.object("MyMonthState", {});
+export type MyMonthState = __Infer<typeof MyMonthState>;
+
+export const MyPlayerSettings = __t.object("MyPlayerSettings", {});
+export type MyPlayerSettings = __Infer<typeof MyPlayerSettings>;
+
+export const OnlinePresence = __t.object("OnlinePresence", {
+  owner: __t.identity(),
+  connections: __t.u32(),
+  lastSeen: __t.timestamp(),
+});
+export type OnlinePresence = __Infer<typeof OnlinePresence>;
+
+export const PlayerSettings = __t.object("PlayerSettings", {
+  id: __t.u64(),
+  owner: __t.identity(),
+  playerKey: __t.string(),
+  confirmationsJson: __t.string(),
+  updatedAt: __t.timestamp(),
+});
+export type PlayerSettings = __Infer<typeof PlayerSettings>;
+
+export const ScoreSnapshot = __t.object("ScoreSnapshot", {
+  id: __t.u64(),
+  owner: __t.identity(),
+  playerKey: __t.string(),
+  month: __t.string(),
+  scoringVersion: __t.string(),
+  status: __t.string(),
+  efficiencyPct: __t.option(__t.f64()),
+  earnedPoints: __t.f64(),
+  availablePoints: __t.f64(),
+  get categories() {
+    return __t.array(CategoryResult);
+  },
+  updatedAt: __t.timestamp(),
+});
+export type ScoreSnapshot = __Infer<typeof ScoreSnapshot>;
+

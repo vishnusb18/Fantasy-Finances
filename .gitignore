@@ -12,3 +12,6 @@ spacetime.local.json
 
 # TypeScript build cache
 *.tsbuildinfo
+
+# League simulator bot identities
+scripts/.sim-tokens.json

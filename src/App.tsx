@@ -3,9 +3,15 @@ import { MEMBERS as PERSONAS } from "./lib/competition/demo";
 import { useEffect, useState } from "react";
 import { FinancePage } from "./app/FinancePage";
 import { Competition } from "./app/Competition";
+import { CloudStatusPill, LiveLeague } from "./app/LiveLeague";
+import { useLiveLeague } from "./app/useLiveLeague";
 
 export default function App() {
   const f = useFinance();
+  const live = useLiveLeague(
+    f.source.kind === "nessie" && __NESSIE_CONFIGURED__,
+    f.customers,
+  );
   const [tab, setTab] = useState("Matchup");
   const [reportMonth, setReportMonth] = useState("");
   useEffect(() => {
@@ -34,15 +40,11 @@ export default function App() {
         </div>
         <div className="sidebar-league">
           <p className="eyebrow">LEAGUE</p>
-          <h2>
-            {src.kind === "sample"
-              ? "The Campus Collective"
-              : "Your financial profile"}
-          </h2>
+          <h2>The Campus Collective</h2>
           <p>
             {src.kind === "sample"
               ? "6 managers · Sample"
-              : "Nessie live accounts"}
+              : `${live.members.length} managers · Live`}
           </p>
         </div>
         <nav className="main-nav" aria-label="Main navigation">
@@ -133,17 +135,22 @@ export default function App() {
                 Reset player
               </button>
             )}
+            <CloudStatusPill status={f.cloudStatus} error={f.cloudError} />
           </div>
         </header>
 
         {tab !== "My Finances" && (
           <Competition
             f={f}
+            live={live}
             tab={tab}
             onFinances={() => setTab("My Finances")}
             selectedReportMonth={reportMonth}
             onReportMonthChange={setReportMonth}
           />
+        )}
+        {tab === "League" && f.source.kind === "nessie" && (
+          <LiveLeague month={f.month} />
         )}
         {tab === "My Finances" && <FinancePage f={f} />}
       </div>

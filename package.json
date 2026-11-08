@@ -9,13 +9,15 @@
     "preview": "vite preview",
     "generate": "cargo run -p gen-bindings -- --out-dir src/module_bindings --module-path spacetimedb && prettier --write src/module_bindings",
     "spacetime:generate": "spacetime generate --lang typescript --out-dir src/module_bindings --module-path spacetimedb",
-    "spacetime:publish:local": "spacetime publish --module-path spacetimedb --server local",
-    "spacetime:publish": "spacetime publish --module-path spacetimedb --server maincloud",
+    "spacetime:start": "spacetime start",
+    "spacetime:publish:local": "spacetime publish fantasyfinance --module-path spacetimedb --server local --yes",
+    "spacetime:publish": "spacetime publish fantasyfinance --module-path spacetimedb --server maincloud",
     "test": "vitest run",
     "test:watch": "vitest",
     "seed:nessie": "tsx scripts/seed-nessie.ts",
     "smoke": "tsx scripts/smoke-render.tsx",
-    "verify:nessie": "tsx scripts/verify-nessie.ts"
+    "verify:nessie": "tsx scripts/verify-nessie.ts",
+    "sim:league": "tsx scripts/sim-league.ts"
   },
   "dependencies": {
     "react": "^18.3.1",

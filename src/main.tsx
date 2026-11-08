@@ -11,12 +11,16 @@ import './typography.css';
 import './achievements.css';
 import './score-columns.css';
 import './animal-avatars.css';
+import './live-league.css';
 
-// MVP (option A): the app runs entirely in the browser. The SpacetimeDB
-// connection from the template is intentionally not mounted yet; the generated
-// bindings in ./module_bindings are kept for the later multiplayer phase.
+import { SpacetimeRoot } from './app/spacetime';
+
+// Nessie supplies bank data; SpacetimeDB stores player state and the live
+// league. The app falls back to browser storage if the server is unreachable.
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <EntryExperience />
+    <SpacetimeRoot>
+      <EntryExperience />
+    </SpacetimeRoot>
   </StrictMode>
 );

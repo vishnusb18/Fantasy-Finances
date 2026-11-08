@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import type { FinanceState } from "./useFinance";
+import type { LiveLeague } from "./useLiveLeague";
 import {
   buildLeague,
-  MEMBERS,
   type DemoLeague,
   type PlayerPeriod,
 } from "../lib/competition/demo";
@@ -47,7 +47,9 @@ export function Competition({
   onFinances,
   selectedReportMonth = "",
   onReportMonthChange,
+  live,
 }: {
+  live?: LiveLeague;
   f: FinanceState;
   tab: string;
   onFinances: () => void;
@@ -57,18 +59,29 @@ export function Competition({
   const [selectedMonth, setMonth] = useState("");
   const [localReportMonth, setLocalReportMonth] = useState("");
   const [animatePeriod, setAnimatePeriod] = useState(false);
+  // Bumped on every month or matchup switch; remounting the position rows
+  // replays the bubble animation even when switching quickly.
+  const [animateKey, setAnimateKey] = useState(0);
+  const replayBubbles = () => {
+    setAnimatePeriod(true);
+    setAnimateKey((k) => k + 1);
+  };
   const changeMonth = (month: string) => {
     setMonth(month);
     setMatchId("");
-    setAnimatePeriod(true);
+    replayBubbles();
   };
   const [matchId, setMatchId] = useState("");
+  const selectMatch = (id: string) => {
+    setMatchId(id);
+    replayBubbles();
+  };
   const [member, setMember] = useState<string | null>(null);
   useEffect(() => {
     if (!animatePeriod) return;
     const timer = window.setTimeout(() => setAnimatePeriod(false), 650);
     return () => window.clearTimeout(timer);
-  }, [selectedMonth, animatePeriod]);
+  }, [animateKey, animatePeriod]);
   useEffect(() => {
     if (!member) return;
     const onKeyDown = (event: KeyboardEvent) => {
@@ -93,16 +106,28 @@ export function Competition({
     document.addEventListener("keydown", onKeyDown);
     return () => document.removeEventListener("keydown", onKeyDown);
   }, [member]);
+  // Live mode: the league is the Nessie customers who are league members, and
+  // "you" are the customer selected in the top bar.
+  const isLive = f.source.kind === "nessie";
+  const liveReady = isLive && !!live?.ready;
+  const ownKey =
+    f.source.kind === "sample"
+      ? f.source.persona
+      : live?.members.find(
+          (m) => f.source.kind === "nessie" && m.customerId === f.source.customerId,
+        )?.key;
+  const ownDataLoaded =
+    !!f.data &&
+    (f.source.kind === "sample"
+      ? f.data.playerId === `seed:${f.source.persona}-cust`
+      : f.data.playerId === `nessie:${f.source.customerId}`);
   const league = useMemo(
     () =>
       buildLeague(
         f.asOf,
-        f.source.kind === "sample" &&
-          f.result &&
-          f.data &&
-          f.data.playerId === `seed:${f.source.persona}-cust`
+        ownKey && f.result && f.data && ownDataLoaded
           ? {
-              key: f.source.persona,
+              key: ownKey,
               result: f.result,
               input: {
                 profile: f.result.profile,
@@ -114,10 +139,12 @@ export function Competition({
               },
             }
           : undefined,
+        liveReady ? live!.data : undefined,
       ),
-    [f.asOf, f.source, f.result, f.data, f.month],
+    [f.asOf, ownKey, ownDataLoaded, f.result, f.data, f.month, liveReady, live?.data],
   );
-  const player = f.source.kind === "sample" ? f.source.persona : MEMBERS[0].key;
+  const player =
+    ownKey && league.members.includes(ownKey) ? ownKey : league.members[0];
   const month = league.months.includes(selectedMonth) ? selectedMonth : f.month;
   const monthMatches = league.matches.filter((m) => m.month === month);
   const match =
@@ -126,7 +153,7 @@ export function Competition({
     monthMatches[0];
   const active = month === f.month;
   const record = standings(
-    MEMBERS.map((p) => p.key),
+    league.members,
     league.matches.filter((m) => m.month <= month),
   );
   const latestFinal = league.matches
@@ -138,7 +165,7 @@ export function Competition({
     latestFinal &&
     league.matches.some((m) => m.status === "final" && m.month < latestFinal)
       ? standings(
-          MEMBERS.map((p) => p.key),
+          league.members,
           league.matches.filter((m) => m.month < latestFinal),
         )
       : [];
@@ -150,29 +177,49 @@ export function Competition({
     ? reportSelection
     : reportMonths.at(-1)!;
   const report = monthlyReport(league, reportMonth);
-  if (f.source.kind === "nessie")
+  if (isLive && !liveReady) {
+    const noLeague = !!f.customers && (live?.members.length ?? 0) < 2;
     return (
       <section className="card competition-empty">
         <span className="section-symbol">◈</span>
-        <h2>No league joined</h2>
-        <button
-          className="btn-primary"
-          onClick={() => f.setSource({ kind: "sample", persona: "maya" })}
-        >
-          Explore sample league
-        </button>{" "}
-        <button className="btn-secondary" onClick={onFinances}>
-          My Finances
-        </button>
+        <h2>
+          {live?.error
+            ? "Couldn't load the league"
+            : noLeague
+              ? "No league joined"
+              : "Loading the live league…"}
+        </h2>
+        <p className="sub">
+          {live?.error ??
+            (noLeague
+              ? "Seed the league members into Nessie (npm run seed:nessie -- --execute) to play live."
+              : "Fetching every member's accounts from Nessie.")}
+        </p>
+        {(noLeague || live?.error) && (
+          <>
+            <button
+              className="btn-primary"
+              onClick={() => f.setSource({ kind: "sample", persona: "maya" })}
+            >
+              Explore sample league
+            </button>{" "}
+            <button className="btn-secondary" onClick={onFinances}>
+              My Finances
+            </button>
+          </>
+        )}
       </section>
     );
+  }
   return (
     <main className="competition">
       <div className="competition-heading">
         <div>
           <p className="eyebrow">
             THE CAMPUS COLLECTIVE{" "}
-            <span className="sample-label">SAMPLE LEAGUE</span>
+            <span className={`sample-label${league.live ? " live-label" : ""}`}>
+              {league.live ? "LIVE · NESSIE" : "SAMPLE LEAGUE"}
+            </span>
           </p>
           <h1>{tab}</h1>
         </div>
@@ -214,7 +261,7 @@ export function Competition({
                   unit="matchup"
                   className="matchup-navigation"
                   value={match.id}
-                  onChange={setMatchId}
+                  onChange={selectMatch}
                   options={monthMatches.map((m) => ({
                     value: m.id,
                     label: `${name(m.a)} vs ${name(m.b)}`,
@@ -272,6 +319,7 @@ export function Competition({
                 />
               </div>
               <PositionRows
+                key={animateKey}
                 a={league.periods[month][match.a]}
                 b={league.periods[month][match.b]}
                 viewer={player}

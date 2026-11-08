@@ -11,7 +11,8 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { createNessieClient } from '../src/lib/finance/adapters/nessie/client';
 import type { NessieAccount, NessieCustomer, NessieMerchant } from '../src/lib/finance/adapters/nessie/types';
-import { generatePersonaBundle, MERCHANTS, PERSONAS } from '../src/lib/finance/demo/personas';
+import { generatePersonaBundle, MERCHANTS } from '../src/lib/finance/demo/personas';
+import { MEMBERS } from '../src/lib/competition/demo';
 import { isoDate } from '../src/lib/finance/util';
 
 function loadEnvFile(path: string) {
@@ -42,7 +43,8 @@ const DALLAS = {
 };
 
 async function main() {
-  const personas = PERSONAS.filter(p => !only || p.key === only);
+  // All six league members (Maya, Jordan + four variants). Existing customers are skipped.
+  const personas = MEMBERS.filter(p => !only || p.key === only);
   console.log(`${execute ? 'EXECUTING' : 'DRY RUN'} — as-of ${asOf}, ${baseUrl}, personas: ${personas.map(p => p.key).join(', ')}`);
 
   // Idempotent re-runs: reuse merchants that already exist (by name) and skip

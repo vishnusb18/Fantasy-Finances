@@ -54,9 +54,21 @@ export function createNessieClient({ baseUrl, apiKey, fetchImpl = fetch }: Nessi
     return (json.objectCreated ?? json) as T;
   }
 
+  async function put<T>(path: string, body: unknown): Promise<T> {
+    const res = await fetchImpl(url(path), {
+      method: 'PUT',
+      headers: { 'content-type': 'application/json', accept: 'application/json' },
+      body: JSON.stringify(body),
+    });
+    const text = await res.text();
+    if (!res.ok) throw new NessieError(`Nessie PUT ${path} failed: ${res.status} ${text}`, res.status);
+    return (text ? JSON.parse(text) : {}) as T;
+  }
+
   return {
     get,
     post,
+    put,
     listCustomers: () => get<NessieCustomer[]>('/customers'),
 
     /** Pull everything we score for one customer. */

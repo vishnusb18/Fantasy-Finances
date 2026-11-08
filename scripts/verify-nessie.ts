@@ -3,7 +3,8 @@
 import { readFileSync } from 'node:fs';
 import { createNessieClient } from '../src/lib/finance/adapters/nessie/client';
 import { nessieToProviderData } from '../src/lib/finance/adapters/nessie/toProviderData';
-import { generatePersonaBundle, PERSONAS } from '../src/lib/finance/demo/personas';
+import { generatePersonaBundle } from '../src/lib/finance/demo/personas';
+import { MEMBERS as PERSONAS } from '../src/lib/competition/demo';
 import { runFinancePipeline } from '../src/lib/finance/pipeline';
 import { isoDate } from '../src/lib/finance/util';
 

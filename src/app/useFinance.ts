@@ -1,4 +1,6 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { timestampToIso, useCloud, type Cloud } from "./spacetime";
+import { publicScoreArgs } from "../lib/league/publish";
 import { createNessieClient } from "../lib/finance/adapters/nessie/client";
 import type { NessieCustomer } from "../lib/finance/adapters/nessie/types";
 import { nessieToProviderData } from "../lib/finance/adapters/nessie/toProviderData";
@@ -22,9 +24,10 @@ import type {
 } from "../lib/finance/types";
 import { isoDate, monthOf } from "../lib/finance/util";
 
-// Option A: everything lives in this browser tab. localStorage only remembers
-// per-player conveniences (corrections, personal goals, the locked baseline)
-// and every access is guarded so the app still works without it.
+// Player state (corrections, confirmations, the locked baseline, personal
+// goals) is stored in SpacetimeDB when connected. localStorage is a cache and
+// the fallback when the server is unreachable; every access is guarded so the
+// app still works without it.
 const store = {
   get<T>(key: string): T | undefined {
     try {
@@ -141,19 +144,153 @@ export function useFinance() {
   // Which player's saved state is currently loaded. The lock / personal-budget
   // effects wait for this so they never overwrite saved state mid-restore.
   const [restoredKey, setRestoredKey] = useState("");
-  const playerKey = `${playerId}:${month}`;
-  const restored = !!playerId && restoredKey === playerKey;
 
-  // Per-player state, restored when the player changes.
+  // Where player state lives right now. "wait" holds the restore briefly while
+  // the first SpacetimeDB connection is being made.
+  const cloud = useCloud();
+  const storeMode =
+    cloud.status === "ready"
+      ? "cloud"
+      : cloud.status === "connecting"
+        ? "wait"
+        : "local";
+  const restoreKey = `${playerId}:${month}:${storeMode}`;
+  const restored =
+    !!playerId && storeMode !== "wait" && restoredKey === restoreKey;
+
+  // Reducer calls run one at a time, in order (lock before personal budget
+  // before score), and a failure is surfaced instead of thrown.
+  const queue = useRef<Promise<void>>(Promise.resolve());
+  const [cloudError, setCloudError] = useState<string | null>(null);
+  const send = useCallback(
+    (
+      label: string,
+      call: (r: NonNullable<Cloud["reducers"]>) => Promise<void>,
+    ) => {
+      const reducers = cloud.reducers;
+      if (!reducers) return;
+      queue.current = queue.current
+        .then(() => call(reducers))
+        .then(
+          () => setCloudError(null),
+          (e) => {
+            const msg = e instanceof Error ? e.message : String(e);
+            console.warn(`SpacetimeDB ${label} failed:`, e);
+            setCloudError(`${label}: ${msg}`);
+          },
+        );
+    },
+    [cloud.reducers],
+  );
+  const lockRemote = (b: ScoringBaseline, revisionReason?: string) =>
+    send("Lock baseline", (r) =>
+      r.lockBaseline({
+        playerKey: b.playerId,
+        month: b.month,
+        baselineId: b.id,
+        baselineJson: JSON.stringify(b),
+        revisionReason,
+      }),
+    );
+  const savePersonalRemote = (pb: PersonalBudget) =>
+    send("Save personal budget", (r) =>
+      r.savePersonalBudget({
+        playerKey: pb.playerId,
+        month: pb.month,
+        personalBudgetJson: JSON.stringify(pb),
+      }),
+    );
+  const overrideRemote = (o: CategoryOverride) =>
+    send("Save correction", (r) =>
+      r.setCategoryOverride({
+        playerKey: playerId,
+        transactionId: o.transactionId,
+        category: o.category,
+      }),
+    );
+  const confirmRemote = (c: PlayerConfirmations) =>
+    send("Save confirmations", (r) =>
+      r.saveConfirmations({
+        playerKey: playerId,
+        confirmationsJson: JSON.stringify(c),
+      }),
+    );
+
+  // Per-player state, restored when the player, month or store changes.
   useEffect(() => {
-    if (!playerId) return;
-    setOverrides(store.get(`ff:overrides:${playerId}`) ?? []);
-    setConfirmations(store.get(`ff:confirm:${playerId}`) ?? {});
-    setLocked(store.get(k("baseline")));
-    setPersonal(store.get(k("personal")));
-    setRestoredKey(playerKey);
+    if (!playerId || storeMode === "wait") return;
+    const local = {
+      overrides: store.get<CategoryOverride[]>(`ff:overrides:${playerId}`) ?? [],
+      confirmations: store.get<PlayerConfirmations>(`ff:confirm:${playerId}`),
+      baseline: store.get<ScoringBaseline>(k("baseline")),
+      personal: store.get<PersonalBudget>(k("personal")),
+    };
+    if (storeMode === "local") {
+      setOverrides(local.overrides);
+      setConfirmations(local.confirmations ?? {});
+      setLocked(local.baseline);
+      setPersonal(local.personal);
+      setRestoredKey(restoreKey);
+      return;
+    }
+
+    // Cloud is the source of truth. Anything saved only in this browser (e.g.
+    // while offline) is uploaded so it isn't lost.
+    const parse = <T,>(json?: string) => {
+      if (!json) return undefined;
+      try {
+        return JSON.parse(json) as T;
+      } catch {
+        return undefined;
+      }
+    };
+    const ms = cloud.monthStates.find(
+      (r) => r.playerKey === playerId && r.month === month,
+    );
+    const settings = cloud.settings.find((r) => r.playerKey === playerId);
+
+    let baseline = parse<ScoringBaseline>(ms?.baselineJson);
+    if (!baseline && local.baseline) {
+      baseline = local.baseline;
+      lockRemote(local.baseline);
+    }
+    let personal = parse<PersonalBudget>(ms?.personalBudgetJson ?? undefined);
+    if (!personal && local.personal && local.personal.baselineId === baseline?.id) {
+      personal = local.personal;
+      savePersonalRemote(local.personal);
+    }
+
+    const cloudOverrides: CategoryOverride[] = cloud.overrides
+      .filter((r) => r.playerKey === playerId)
+      .map((r) => ({
+        transactionId: r.transactionId,
+        category: r.category as TransactionCategory,
+        correctedAt: timestampToIso(r.correctedAt),
+      }));
+    const localOnly = local.overrides.filter(
+      (o) => !cloudOverrides.some((c) => c.transactionId === o.transactionId),
+    );
+    localOnly.forEach(overrideRemote);
+    const mergedOverrides = [...cloudOverrides, ...localOnly];
+
+    let confirms = parse<PlayerConfirmations>(settings?.confirmationsJson);
+    if (!confirms && local.confirmations) {
+      confirms = local.confirmations;
+      confirmRemote(local.confirmations);
+    }
+
+    setOverrides(mergedOverrides);
+    setConfirmations(confirms ?? {});
+    setLocked(baseline);
+    setPersonal(personal);
+    // Keep the browser cache in step for offline use.
+    store.set(`ff:overrides:${playerId}`, mergedOverrides);
+    if (confirms) store.set(`ff:confirm:${playerId}`, confirms);
+    if (baseline) store.set(k("baseline"), baseline);
+    if (personal) store.set(k("personal"), personal);
+    setRestoredKey(restoreKey);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [playerId, month]);
+  }, [playerId, month, storeMode]);
 
   const result = useMemo(
     () =>
@@ -175,6 +312,7 @@ export function useFinance() {
       return;
     setLocked(result.baseline);
     store.set(k("baseline"), result.baseline);
+    lockRemote(result.baseline);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [result, restored, locked]);
   useEffect(() => {
@@ -183,8 +321,36 @@ export function useFinance() {
     const pb = createPersonalBudget(result.baseline);
     setPersonal(pb);
     store.set(k("personal"), pb);
+    savePersonalRemote(pb);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [result, restored, personal]);
+
+  // League: register the viewed player and publish its public score summary
+  // (category points only — no amounts or transactions leave the browser).
+  // Only live Nessie players compete; the offline sample never joins.
+  const competing = data?.source === "nessie";
+  const lastPublished = useRef("");
+  useEffect(() => {
+    if (!data || !competing || storeMode !== "cloud") return;
+    lastPublished.current = "";
+    send("Join league", (r) =>
+      r.joinLeague({
+        playerKey: data.playerId,
+        displayName: data.displayName,
+        source: data.source,
+      }),
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data?.playerId, data?.displayName, competing, storeMode, send]);
+  useEffect(() => {
+    if (!result || !locked || !restored || !competing || storeMode !== "cloud")
+      return;
+    const args = publicScoreArgs(result.score);
+    const signature = JSON.stringify(args);
+    if (signature === lastPublished.current) return;
+    lastPublished.current = signature;
+    send("Publish score", (r) => r.publishScore(args));
+  }, [result, locked, restored, competing, storeMode, send]);
 
   /** What a fresh baseline would look like with current corrections — for "apply corrections". */
   const proposed = useMemo(
@@ -204,22 +370,27 @@ export function useFinance() {
 
   const recategorize = useCallback(
     (transactionId: string, category: TransactionCategory) => {
+      const o = { transactionId, category, correctedAt: new Date().toISOString() };
       const next = [
-        ...overrides.filter((o) => o.transactionId !== transactionId),
-        { transactionId, category, correctedAt: new Date().toISOString() },
+        ...overrides.filter((x) => x.transactionId !== transactionId),
+        o,
       ];
       setOverrides(next);
       store.set(`ff:overrides:${playerId}`, next);
+      overrideRemote(o);
     },
-    [overrides, playerId],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [overrides, playerId, send],
   );
 
   const updateConfirmations = useCallback(
     (next: PlayerConfirmations) => {
       setConfirmations(next);
       store.set(`ff:confirm:${playerId}`, next);
+      confirmRemote(next);
     },
-    [playerId],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [playerId, send],
   );
 
   const applyCorrectionsToBaseline = useCallback(
@@ -231,9 +402,10 @@ export function useFinance() {
       });
       setLocked(next);
       store.set(k("baseline"), next);
+      lockRemote(next, reason || "Applied category corrections");
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [result, locked],
+    [result, locked, send],
   );
 
   const editPersonal = useCallback(
@@ -242,9 +414,10 @@ export function useFinance() {
       const next = updatePersonalBudget(personal, patch);
       setPersonal(next);
       store.set(k("personal"), next);
+      savePersonalRemote(next);
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [personal],
+    [personal, send],
   );
 
   const resetPlayer = useCallback(() => {
@@ -255,8 +428,10 @@ export function useFinance() {
     setConfirmations({});
     setLocked(undefined);
     setPersonal(undefined);
+    lastPublished.current = "";
+    send("Reset player", (r) => r.resetPlayer({ playerKey: playerId }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [playerId, month]);
+  }, [playerId, month, send]);
 
   return {
     asOf,
@@ -278,6 +453,8 @@ export function useFinance() {
     applyCorrectionsToBaseline,
     editPersonal,
     resetPlayer,
+    cloudStatus: cloud.status,
+    cloudError,
   };
 }
 

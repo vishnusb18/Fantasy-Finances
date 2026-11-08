@@ -1,0 +1,68 @@
+/* SpacetimeDB connection pill and live league. */
+.cloud-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.cloud-pill .presence-dot {
+  background: var(--muted);
+}
+.cloud-pill.ready {
+  color: var(--good);
+  background: var(--good-soft);
+}
+.cloud-pill.ready .presence-dot {
+  background: var(--good);
+}
+.cloud-pill.connecting .presence-dot {
+  background: var(--warn);
+  animation: cloud-pulse 1.2s ease-in-out infinite;
+}
+.cloud-pill.offline,
+.cloud-pill.error {
+  color: var(--warn);
+  background: var(--warn-soft);
+}
+.cloud-pill.offline .presence-dot,
+.cloud-pill.error .presence-dot {
+  background: var(--warn);
+}
+
+.presence-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--border);
+  margin-right: 6px;
+  vertical-align: middle;
+}
+.presence-dot.on {
+  background: var(--good);
+}
+
+.live-league {
+  margin-top: 16px;
+}
+.live-league .sub {
+  color: var(--muted);
+}
+
+@keyframes cloud-pulse {
+  50% {
+    opacity: 0.35;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cloud-pill.connecting .presence-dot {
+    animation: none;
+  }
+}

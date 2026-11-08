@@ -3,11 +3,22 @@
 
 /* eslint-disable */
 /* tslint:disable */
-import { type Infer as __Infer } from 'spacetimedb';
+import { type Infer as __Infer } from "spacetimedb";
 
 // Import all reducer arg schemas
-import AddReducer from '../add_reducer';
-import SayHelloReducer from '../say_hello_reducer';
+import JoinLeagueReducer from "../join_league_reducer";
+import LockBaselineReducer from "../lock_baseline_reducer";
+import PublishScoreReducer from "../publish_score_reducer";
+import ResetPlayerReducer from "../reset_player_reducer";
+import SaveConfirmationsReducer from "../save_confirmations_reducer";
+import SavePersonalBudgetReducer from "../save_personal_budget_reducer";
+import SetCategoryOverrideReducer from "../set_category_override_reducer";
 
-export type AddParams = __Infer<typeof AddReducer>;
-export type SayHelloParams = __Infer<typeof SayHelloReducer>;
+export type JoinLeagueParams = __Infer<typeof JoinLeagueReducer>;
+export type LockBaselineParams = __Infer<typeof LockBaselineReducer>;
+export type PublishScoreParams = __Infer<typeof PublishScoreReducer>;
+export type ResetPlayerParams = __Infer<typeof ResetPlayerReducer>;
+export type SaveConfirmationsParams = __Infer<typeof SaveConfirmationsReducer>;
+export type SavePersonalBudgetParams = __Infer<typeof SavePersonalBudgetReducer>;
+export type SetCategoryOverrideParams = __Infer<typeof SetCategoryOverrideReducer>;
+
