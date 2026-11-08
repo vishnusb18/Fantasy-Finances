@@ -19,8 +19,13 @@ export default function App() {
       <aside className="sidebar">
         {" "}
         <div className="brand">
-          <span className="logo" aria-hidden>
-            ◆
+          <span className="logo brand-logo" aria-hidden>
+            <img
+              src="/images/brand-logo.png"
+              alt=""
+              width={1536}
+              height={1024}
+            />
           </span>
           <div>
             <h1>Fantasy Finance</h1>
