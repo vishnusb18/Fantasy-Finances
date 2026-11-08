@@ -90,7 +90,8 @@ function sdk(text: string, finishReason: string | undefined = "STOP") {
 const plan = JSON.stringify({ explanationIds: [], recommendationIds: [] });
 /** A verified statement Gemini may quote (its numbers come from the engine). */
 const verifiedForecast = (context: ReturnType<typeof fixture>["context"]) =>
-  explanationCatalog(context).facts.find((f) => f.id === "scenario.forecast")!.text;
+  explanationCatalog(context).facts.find((f) => f.id === "scenario.forecast")!
+    .text;
 
 describe("engine-only paired scenario ledger", () => {
   it("saving $25 at 25/25 yields no current or forecast gain, despite a different baseline forecast", () => {
@@ -269,7 +270,7 @@ describe("Gemini completion and telemetry", () => {
       /transactions|apiKey|account|Maya/,
     );
   });
-  it("never shows an invented number: retries once with feedback, then falls back to the verified template", async () => {
+  it("never spends a second generation on invented numbers: uses the verified template immediately", async () => {
     const context = fixture().context;
     const { ai, generateContent } = sdk(
       "Save $999.99 and you'll gain 42.7 points, guaranteed.",
@@ -282,11 +283,7 @@ describe("Gemini completion and telemetry", () => {
       { message: question, monthId: "2026-11" },
       log,
     );
-    expect(generateContent).toHaveBeenCalledTimes(2);
-    const retry = generateContent.mock.calls[1] as unknown as [
-      { contents: { parts: { text: string }[] }[] },
-    ];
-    expect(retry[0].contents.at(-1)!.parts[0].text).toMatch(/\$999\.99.*42\.7/);
+    expect(generateContent).toHaveBeenCalledTimes(1);
     expect(answer).not.toMatch(/999|42\.7/);
     expect(answer).toContain("Month-end forecast: baseline"); // verified template
     expect(log.mock.calls.at(-1)![0]).toMatchObject({
@@ -294,23 +291,56 @@ describe("Gemini completion and telemetry", () => {
       rejectedNumbers: 2,
     });
   });
-  it("uses the retry when Gemini fixes its numbers after feedback", async () => {
-    const context = fixture().context;
-    const fixed = `Here's the verified picture. ${verifiedForecast(context)}`;
-    const { ai, generateContent } = sdk("You'd gain 42.7 points.");
-    generateContent.mockResolvedValueOnce({
-      text: "You'd gain 42.7 points.",
-      candidates: [{ finishReason: "STOP" }],
-    } as never);
-    generateContent.mockResolvedValueOnce({
-      text: fixed,
-      candidates: [{ finishReason: "STOP" }],
-    } as never);
-    const log = vi.fn();
-    expect(
-      await generateCoachReply(ai, "test", context, { message: question, monthId: "2026-11" }, log),
-    ).toBe(fixed);
-    expect(log.mock.calls.at(-1)![0].verification).toBe("retried");
+  it("does not retry a Google permission denial or spend additional generation quota", async () => {
+    const { ai, generateContent } = sdk(plan),
+      log = vi.fn();
+    const error = Object.assign(
+      new Error(
+        JSON.stringify({
+          error: {
+            code: 403,
+            message: "The caller does not have permission",
+            status: "PERMISSION_DENIED",
+          },
+        }),
+      ),
+      { status: 403 },
+    );
+    generateContent.mockRejectedValueOnce(error);
+    await expect(
+      generateCoachReply(
+        ai,
+        "test",
+        fixture().context,
+        { message: question, monthId: "2026-11" },
+        log,
+      ),
+    ).rejects.toBe(error);
+    expect(generateContent).toHaveBeenCalledTimes(1);
+    expect(log.mock.calls[0][0]).toMatchObject({
+      providerStatus: 403,
+      providerReason: "permission_denied",
+    });
+    expect(coachError(error)).toMatchObject({
+      code: "gemini_permission_denied",
+    });
+    expect(coachError(error).error).not.toMatch(/expired|quota/i);
+  });
+  it("distinguishes explicitly blocked keys from generic permission errors without exposing secrets", () => {
+    const error = Object.assign(
+      new Error(
+        JSON.stringify({
+          error: {
+            code: 403,
+            message: "API key SECRET_VALUE was reported as leaked",
+            status: "PERMISSION_DENIED",
+          },
+        }),
+      ),
+      { status: 403 },
+    );
+    expect(coachError(error).code).toBe("gemini_key_blocked");
+    expect(coachError(error).error).not.toContain("SECRET_VALUE");
   });
   it.each(["MAX_TOKENS", "SAFETY", undefined])(
     "rejects %s even if its text looks like valid complete JSON",

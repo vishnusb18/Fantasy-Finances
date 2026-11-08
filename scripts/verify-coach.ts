@@ -106,7 +106,11 @@ if (!env.GEMINI_API_KEY) {
     const text = await generateCoachReply(
       new GoogleGenAI({
         apiKey: env.GEMINI_API_KEY,
-        httpOptions: { apiVersion: "v1beta", timeout: 30000 },
+        httpOptions: {
+          apiVersion: "v1beta",
+          timeout: 30000,
+          retryOptions: { attempts: 1 },
+        },
       }),
       model,
       context,
