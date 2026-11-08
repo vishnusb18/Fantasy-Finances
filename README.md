@@ -114,3 +114,11 @@ spacetime logs
 
 - See the [Chat App Tutorial](https://spacetimedb.com/docs/tutorials/chat-app) for a complete example
 - Read the [TypeScript SDK Reference](https://spacetimedb.com/docs/clients/typescript) for detailed API docs
+
+## Monthly competition
+
+The app opens to a responsive **Matchup** experience. Explore **League** for finalized standings and member performance, **Reports** for completed-month awards and feasible what-if analyses, and **My Finances** for the existing Nessie-backed dashboard.
+
+Offline mode includes six synthetic players, three completed months, and an active monthly round. Switch players and months to explore the demo. Live Nessie customers retain their financial dashboard; no live multiplayer league is connected.
+
+See [COMPETITION.md](COMPETITION.md) for scoring v2, projection assumptions, fixture limitations, privacy boundaries, and validation commands.

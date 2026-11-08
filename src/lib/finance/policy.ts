@@ -18,4 +18,4 @@ export const DEFAULT_POLICY: BudgetPolicy = {
   uncertainCategoryShare: 0.15,
 };
 
-export const SCORING_VERSION = 'score-2026.11-v1';
+export const SCORING_VERSION = 'score-2026.11-v2';
