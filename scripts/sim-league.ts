@@ -51,7 +51,7 @@ const arg = (name: string) => process.argv.find(a => a.startsWith(`--${name}=`))
 const ME = arg('me') ?? 'maya';
 const MAX_MOVES = Number(arg('moves') ?? Infinity);
 const [MIN_S, MAX_S = MIN_S] = (arg('interval') ?? '10').split('-').map(Number);
-const STDB_URI = (process.env.VITE_SPACETIMEDB_HOST || 'ws://localhost:3000').replace(/^http/, 'ws');
+const STDB_URI = (process.env.VITE_SPACETIMEDB_HOST || 'wss://maincloud.spacetimedb.com').replace(/^http/, 'ws');
 const STDB_DB = process.env.VITE_SPACETIMEDB_DB || process.env.VITE_SPACETIMEDB_DB_NAME || 'fantasyfinance';
 const TOKENS_FILE = 'scripts/.sim-tokens.json';
 /** A move must change the score by at least this many points to be "visible". */
@@ -173,9 +173,9 @@ function connect(key: string): Promise<DbConnection> {
     DbConnection.builder()
       .withUri(STDB_URI)
       .withDatabaseName(STDB_DB)
-      .withToken(tokens[key])
+      .withToken(tokens[`${STDB_URI}/${STDB_DB}/${key}`])
       .onConnect((conn, _identity, token) => {
-        tokens[key] = token;
+        tokens[`${STDB_URI}/${STDB_DB}/${key}`] = token; // identities are per server
         saveTokens();
         conn
           .subscriptionBuilder()

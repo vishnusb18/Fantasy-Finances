@@ -17,7 +17,9 @@ import { DbConnection, tables } from "../module_bindings";
  * from localStorage and says so in the top bar.
  */
 const env = import.meta.env;
-export const STDB_URI: string = env.VITE_SPACETIMEDB_HOST || "ws://localhost:3000";
+// Shared league on maincloud by default; set VITE_SPACETIMEDB_HOST=ws://localhost:3000 for a local server.
+export const STDB_URI: string =
+  env.VITE_SPACETIMEDB_HOST || "wss://maincloud.spacetimedb.com";
 export const STDB_DB: string =
   env.VITE_SPACETIMEDB_DB || env.VITE_SPACETIMEDB_DB_NAME || "fantasyfinance";
 const STDB_ENABLED = env.VITE_SPACETIMEDB_DISABLED !== "true" && env.MODE !== "test";
