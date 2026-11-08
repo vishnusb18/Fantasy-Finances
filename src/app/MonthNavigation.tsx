@@ -16,15 +16,17 @@ export function MonthNavigation({
   months,
   value,
   onChange,
+  ariaLabel = "Matchup month",
 }: {
   months: string[];
   value: string;
   onChange: (month: string) => void;
+  ariaLabel?: string;
 }) {
   const prev = adjacentMonth(months, value, -1),
     next = adjacentMonth(months, value, 1);
   return (
-    <nav className="month-navigation" aria-label="Matchup month">
+    <nav className="month-navigation" aria-label={ariaLabel}>
       <button
         type="button"
         aria-label="Previous month"

@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import type { FinanceState } from "./useFinance";
 import type { ScoringBaseline } from "../lib/finance/types";
 import { financeMonths, financeMonthView } from "./financeMonth";
-import { monthTitle } from "./MonthNavigation";
+import { MonthNavigation } from "./MonthNavigation";
 import { ContributionPie } from "./ContributionPie";
 import { BudgetSection } from "./BudgetSection";
 import { ProfileSection } from "./ProfileSection";
@@ -33,19 +33,12 @@ export function FinancePage({ f }: { f: FinanceState }) {
     <main className="finance-page">
       <header className="competition-heading">
         <h1>My Finances</h1>
-        <label className="month-picker">
-          <select
-            aria-label="Finance month"
-            value={month}
-            onChange={(e) => setSelected(e.target.value)}
-          >
-            {months.map((m) => (
-              <option key={m} value={m}>
-                {monthTitle(m)}
-              </option>
-            ))}
-          </select>
-        </label>
+        <MonthNavigation
+          months={months}
+          value={month}
+          onChange={setSelected}
+          ariaLabel="Finance month"
+        />
       </header>
       {f.source.kind === "nessie" && !__NESSIE_CONFIGURED__ && (
         <section className="card setup">
