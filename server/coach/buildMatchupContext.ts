@@ -1,7 +1,10 @@
 import type { LeagueSession, PublicLeagueScore } from "../leagueSession";
 import type { ProviderData } from "../../src/lib/finance/types";
 import { runFinancePipeline } from "../../src/lib/finance/pipeline";
-import { positions } from "../../src/lib/competition/engine";
+import {
+  positions,
+  projectMonthEndScore,
+} from "../../src/lib/competition/engine";
 import {
   simulateMove,
   type MoveInput,
@@ -14,11 +17,18 @@ import {
   netInvestmentContributionsCents,
   inPeriod,
 } from "../../src/lib/finance/normalize";
-import { previousMonths, monthEnd } from "../../src/lib/finance/util";
+import { previousMonths, monthEnd, round1 } from "../../src/lib/finance/util";
 import { MEMBERS } from "../../src/lib/competition/demo";
 import { monthPairings } from "../../src/lib/competition/pairings";
 import { positionLabel } from "../../src/app/competitionIdentity";
 import { calculateEfficiencyScore } from "../../src/lib/finance/scoring";
+import type { CoachScenario } from "../../src/lib/coach";
+import { coachScore, verifiedScenario, validateScenario } from "./scenarios";
+import {
+  buildMatchupAnalysis,
+  isMatchupStrategyQuestion,
+  type CategoryState,
+} from "./matchupAnalysis";
 
 const latest = (scores: PublicLeagueScore[], player: string, month: string) =>
   scores
@@ -50,7 +60,7 @@ const publicView = (score: PublicLeagueScore) => ({
       eligible: c.eligible,
       efficiencyPercent:
         c.eligible && c.available > 0
-          ? Math.round((c.earned / c.available) * 1000) / 10
+          ? round1((c.earned / c.available) * 100)
           : null,
     })),
 });
@@ -110,7 +120,7 @@ export function buildMatchupContext(
             eligible: p.eligible,
             efficiencyPercent:
               p.eligible && p.available > 0
-                ? Math.round((p.earned / p.available) * 1000) / 10
+                ? round1((p.earned / p.available) * 100)
                 : null,
           })),
         }
@@ -188,7 +198,36 @@ export function buildMatchupContext(
         ...publicView(opponentScore),
       }
     : undefined;
-  const scenarios: Array<Record<string, unknown>> = [];
+  const forecast =
+    result && active
+      ? projectMonthEndScore({
+          profile: result.profile,
+          baseline: baseline!,
+          transactions: result.transactions,
+          accounts: data.accounts,
+          obligations: data.obligations,
+          scoringPeriod: { month, asOf },
+          policy: DEFAULT_POLICY,
+        })
+      : null;
+  const scenarios: CoachScenario[] = [];
+  const requestedAction = /\b(?:save|saving|savings)\b/i.test(question)
+    ? "save"
+    : /\b(?:invest|investing|investment)\b/i.test(question)
+      ? "invest"
+      : null;
+  const amount = requestedAction
+    ? question.match(
+        /\$\s*(\d+(?:,\d{3})*(?:\.\d{1,2})?)(?![\d.])|\b(?:save|invest)(?:\s+another)?\s+(\d+(?:\.\d{1,2})?)(?![\d.])/i,
+      )
+    : null;
+  const requestedCents = amount
+    ? Math.round(Number((amount[1] ?? amount[2]).replace(/,/g, "")) * 100)
+    : null;
+  const requestedScenarioId =
+    requestedAction && requestedCents !== null
+      ? `${requestedAction}:${requestedCents}`
+      : null;
   if (result && baseline && active) {
     const input: MoveInput = {
       data,
@@ -197,71 +236,134 @@ export function buildMatchupContext(
       confirmations: session.confirmations,
       overrides: session.overrides,
     };
-    const requested = /\b(?:save|saving|savings|invest|investing)\b/i.test(
-      question,
-    )
-      ? question.match(
-          /\$\s*(\d+(?:\.\d{1,2})?)|\b(?:save|invest)(?:\s+another)?\s+(\d+(?:\.\d{1,2})?)/i,
-        )
-      : null;
-    const requestedCents = requested
-      ? Math.round(Number(requested[1] ?? requested[2]) * 100)
-      : 2500;
+    const evaluate = (
+      move: Move,
+      id: string,
+      action: CoachScenario["action"],
+      remainingTargetCents: number | null,
+    ) => {
+      let preview;
+      try {
+        preview = simulateMove(input, move);
+      } catch (e) {
+        const categoryKey =
+          action === "save"
+            ? "savings"
+            : action === "invest"
+              ? "investing"
+              : "bills";
+        const category = positions(result.score).find(
+          (p) => p.key === categoryKey,
+        )!;
+        const scenario: CoachScenario = {
+          id,
+          action,
+          amountCents:
+            move.kind === "bill"
+              ? data.obligations.find((o) => o.id === move.billId)!.amountCents
+              : move.amountCents,
+          feasible: false,
+          status: "unavailable",
+          verification: "existing_scoring_engine",
+          current: coachScore(result.score),
+          baselineForecast: forecast?.score ? coachScore(forecast.score) : null,
+          hypotheticalCurrent: null,
+          hypotheticalForecast: null,
+          rawEarnedPointDelta: null,
+          percentagePointDelta: null,
+          projectedRawPointDelta: null,
+          projectedPercentagePointDelta: null,
+          category: {
+            key: categoryKey,
+            eligible: category.eligible,
+            beforePoints: category.earned,
+            afterPoints: null,
+            availablePoints: category.available,
+            remainingCapacityPoints: round1(
+              Math.max(0, category.available - category.earned),
+            ),
+            remainingTargetCents,
+          },
+          reason:
+            e instanceof Error
+              ? e.message
+              : "The scoring engine could not verify this scenario.",
+        };
+        validateScenario(scenario);
+        scenarios.push(scenario);
+        return;
+      }
+      scenarios.push(
+        verifiedScenario(id, action, preview, remainingTargetCents),
+      );
+    };
     for (const kind of ["save", "invest"] as const) {
       const remaining =
         kind === "save"
           ? user.savingsTargetRemainingCents
           : user.investingTargetRemainingCents;
       const amounts = new Set([
-        requestedCents,
+        requestedCents ?? 2500,
         Math.min(user.safeAvailableToAllocateCents ?? 0, remaining ?? 0),
       ]);
       for (const amountCents of amounts) {
         if (!Number.isSafeInteger(amountCents) || amountCents <= 0) continue;
-        try {
-          const p = simulateMove(input, { kind, amountCents });
-          scenarios.push({
-            action: kind,
-            amountCents,
-            status: "hypothetical",
-            efficiencyBefore: p.before.score.efficiencyPct,
-            efficiencyAfter: p.after.score.efficiencyPct,
-            percentagePointDelta: p.percentagePointDelta,
-            rawEarnedPointDelta: p.rawPointDelta,
-            projectedEfficiencyAfter: p.projectedAfter?.efficiencyPct ?? null,
-            explanation: p.explanation,
-          });
-        } catch (e) {
-          scenarios.push({
-            action: kind,
-            amountCents,
-            status: "unavailable",
-            reason: e instanceof Error ? e.message : "Cannot verify scenario",
-          });
-        }
+        evaluate(
+          { kind, amountCents },
+          `${kind}:${amountCents}`,
+          kind,
+          remaining ?? null,
+        );
       }
     }
-    for (const bill of data.obligations
-      .filter((o) => o.status !== "paid" && o.dueDate.startsWith(month))
-      .slice(0, 3)) {
-      try {
-        const p = simulateMove(input, {
-          kind: "bill",
-          billId: bill.id,
-        } as Move);
-        scenarios.push({
-          action: "pay_due_bill",
-          amountCents: p.amountCents,
-          status: "hypothetical",
-          percentagePointDelta: p.percentagePointDelta,
-          execution: "preview_only",
-        });
-      } catch {
-        /* Future bills remain upcoming; no invented early-payment gain. */
-      }
+    for (const [index, bill] of data.obligations
+      .filter(
+        (o) =>
+          o.status !== "paid" &&
+          o.dueDate.startsWith(month) &&
+          o.dueDate <= asOf,
+      )
+      .slice(0, 3)
+      .entries()) {
+      evaluate(
+        { kind: "bill", billId: bill.id },
+        `bill:${index}`,
+        "pay_due_bill",
+        null,
+      );
     }
   }
+  const analysis = buildMatchupAnalysis({
+    user: {
+      ...user,
+      categories: user.categories.map((c) => ({
+        ...c,
+        ...(result
+          ? {
+              state: (c.eligible
+                ? "scored"
+                : ["savings", "investing", "bills"].includes(c.key) &&
+                    baseline![c.key as "savings" | "investing" | "bills"]
+                      .eligible
+                  ? "unscored"
+                  : "ineligible") as CategoryState,
+            }
+          : {}),
+      })),
+    },
+    opponent,
+    scenarios,
+    active,
+    baselineVerified: !!baseline,
+    ownerScoresFromEngine: !!result,
+  });
   return {
+    responseKind: requestedScenarioId
+      ? ("scenario" as const)
+      : isMatchupStrategyQuestion(question)
+        ? ("strategy" as const)
+        : ("score" as const),
+    analysis,
     month,
     now,
     currency: "USD",
@@ -278,6 +380,19 @@ export function buildMatchupContext(
           opponentUnavailable:
             "No verified public opponent snapshot for this month.",
         }),
+    current: result
+      ? coachScore(result.score)
+      : ownPublic
+        ? {
+            efficiencyPercent: ownPublic.efficiencyPct,
+            earnedPoints: ownPublic.earnedPoints,
+            eligiblePoints: ownPublic.availablePoints,
+          }
+        : null,
+    baselineForecast: forecast?.score ? coachScore(forecast.score) : null,
+    forecastAssumptions: forecast?.assumptions ?? [],
+    requestedAction,
+    requestedScenarioId,
     scenarios,
     ...(!baseline
       ? {

@@ -4,7 +4,7 @@ import { positions } from "../lib/competition/engine";
 import { contributionSegments } from "../lib/competition/presentation";
 import { positionLabel } from "./competitionIdentity";
 import { inPeriod } from "../lib/finance/normalize";
-import { formatCents } from "../lib/finance/util";
+import { formatCents, formatEfficiency } from "../lib/finance/util";
 const pieColors = [
   "#7c4fac",
   "#f8bf48",
@@ -73,7 +73,7 @@ export function ContributionPie({ f }: { f: FinanceState }) {
         </div>
         <div className="financial-summary">
           <div>
-            <strong>{score.efficiencyPct?.toFixed(1) ?? "—"}%</strong>
+            <strong>{formatEfficiency(score.efficiencyPct)}</strong>
             <p>Efficiency</p>
           </div>
           <span className="chip">

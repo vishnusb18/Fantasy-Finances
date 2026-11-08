@@ -1,0 +1,43 @@
+{
+  "status": "passed",
+  "note": "UI transport fixture; responses mocked, no real league identity or banking data used. Real Gemini call is verified separately by verify:coach.",
+  "checks": [
+    "HTTP question and bounded follow-up history",
+    "interrupted generation and same-request retry without duplicate message",
+    "rejects HTTP success carrying incomplete completion status",
+    "complete responses longer than 5000 characters scroll on desktop/mobile",
+    "rapid repeated Enter produces one request",
+    "loading and send state",
+    "keyboard focus wrap and Escape",
+    "close/reopen preserves thread",
+    "month change isolates history"
+  ],
+  "requests": [
+    {
+      "message": "What if I save another $25?",
+      "monthId": "2026-11",
+      "historyCount": 0
+    },
+    {
+      "message": "What if I save another $25?",
+      "monthId": "2026-11",
+      "historyCount": 0
+    },
+    {
+      "message": "And what about my opponent?",
+      "monthId": "2026-11",
+      "historyCount": 2
+    },
+    {
+      "message": "And what about my opponent?",
+      "monthId": "2026-11",
+      "historyCount": 2
+    },
+    {
+      "message": "Explain this historical month.",
+      "monthId": "2026-10",
+      "historyCount": 0
+    }
+  ],
+  "consoleErrors": []
+}

@@ -1,5 +1,5 @@
 import { categoryLabel } from "../lib/finance/scoring";
-import { formatCents, round1 } from "../lib/finance/util";
+import { formatCents, round1, formatEfficiency } from "../lib/finance/util";
 import type { FinanceState } from "./useFinance";
 import { Card, Chip } from "./ui";
 import { ScoreColumns } from "./ScoreColumns";
@@ -25,7 +25,7 @@ export function ScoreSection({ f }: { f: FinanceState }) {
           className={`score-ring ring-${tone}`}
           style={{ ["--pct" as string]: `${pct ?? 0}` }}
         >
-          <div className="score-num">{pct == null ? "—" : `${pct}%`}</div>
+          <div className="score-num">{formatEfficiency(pct)}</div>
           <div className="score-sub">
             {round1(s.earnedPoints)} / {s.availablePoints} pts
           </div>

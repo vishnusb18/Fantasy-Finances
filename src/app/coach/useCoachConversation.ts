@@ -1,6 +1,10 @@
 import { useEffect, useRef, useState } from "react";
-import type { CoachTurn } from "../../lib/coach";
-import { COACH_MAX_MESSAGE } from "../../lib/coach";
+import type { CoachTurn, CoachRequest } from "../../lib/coach";
+import {
+  COACH_MAX_MESSAGE,
+  COACH_REQUEST_TIMEOUT,
+  boundedCoachHistory,
+} from "../../lib/coach";
 import { askCoach } from "./coachApi";
 export type CoachScope = {
   month: string;
@@ -14,6 +18,7 @@ type Thread = {
   error: string | null;
   failedQuestion?: string;
   requestId?: string;
+  failedRequest?: CoachRequest & { requestId: string };
 };
 const empty: Thread = { messages: [], draft: "", error: null };
 export function useCoachConversation(scope: CoachScope) {
@@ -38,12 +43,21 @@ export function useCoachConversation(scope: CoachScope) {
     const message = question.trim();
     if (!message || message.length > COACH_MAX_MESSAGE || flight.current)
       return;
-    const requestId =
-      retry && thread.requestId ? thread.requestId : crypto.randomUUID();
-    const history = retry ? thread.messages.slice(0, -1) : thread.messages;
+    const sameQuestion =
+      retry || (thread.failedQuestion === message && !!thread.failedRequest);
+    const request =
+      sameQuestion && thread.failedRequest
+        ? thread.failedRequest
+        : {
+            message,
+            history: boundedCoachHistory(thread.messages),
+            monthId: scope.month,
+            expectedPlayerKey: scope.playerKey,
+            requestId: crypto.randomUUID(),
+          };
     update((t) => ({
       ...t,
-      messages: retry
+      messages: sameQuestion
         ? t.messages
         : ([...t.messages, { role: "user", content: message }].slice(
             -24,
@@ -51,12 +65,13 @@ export function useCoachConversation(scope: CoachScope) {
       draft: "",
       error: null,
       failedQuestion: undefined,
-      requestId,
+      requestId: request.requestId,
+      failedRequest: undefined,
     }));
     const controller = new AbortController();
     flight.current = { key, controller };
     setPending(key);
-    const timeout = setTimeout(() => controller.abort(), 45000);
+    const timeout = setTimeout(() => controller.abort(), COACH_REQUEST_TIMEOUT);
     try {
       if (scope.source !== "nessie")
         throw new Error(
@@ -66,17 +81,8 @@ export function useCoachConversation(scope: CoachScope) {
         throw new Error(
           "SpacetimeDB is disconnected. Reconnect your league, then retry your saved question.",
         );
-      const answer = await askCoach(
-        {
-          message,
-          history: history.slice(-12),
-          monthId: scope.month,
-          expectedPlayerKey: scope.playerKey,
-          requestId,
-        },
-        controller.signal,
-      );
-      if (controller.signal.aborted) return;
+      const answer = await askCoach(request, controller.signal);
+      if (controller.signal.aborted) throw new Error("Request interrupted");
       update((t) => ({
         ...t,
         messages: [
@@ -85,6 +91,7 @@ export function useCoachConversation(scope: CoachScope) {
         ].slice(-24) as CoachTurn[],
         error: null,
         failedQuestion: undefined,
+        failedRequest: undefined,
       }));
     } catch (e) {
       update((t) => ({
@@ -96,6 +103,7 @@ export function useCoachConversation(scope: CoachScope) {
             ? e.message
             : "Drifblim couldn't connect. Please retry.",
         failedQuestion: message,
+        failedRequest: request,
       }));
     } finally {
       clearTimeout(timeout);

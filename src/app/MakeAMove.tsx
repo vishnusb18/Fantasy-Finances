@@ -14,7 +14,7 @@ import {
   DISCRETIONARY_CATEGORIES,
   type DiscretionaryCategory,
 } from "../lib/finance/types";
-import { formatCents } from "../lib/finance/util";
+import { formatCents, formatEfficiency } from "../lib/finance/util";
 import {
   simulateMove,
   movePurchases,
@@ -82,7 +82,7 @@ export function MoveSparkles() {
   );
 }
 const percent = (n: number | null | undefined) =>
-  n == null ? "Unavailable" : `${n.toFixed(1)}%`;
+  formatEfficiency(n, "Unavailable");
 const signed = (n: number) => `${n > 0 ? "+" : ""}${n.toFixed(1)}`;
 const leader = (own: number, other: number, name: string) =>
   own === other ? "Tie" : own > other ? "You" : name;

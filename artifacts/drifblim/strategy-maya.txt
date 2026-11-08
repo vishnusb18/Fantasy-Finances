@@ -1,0 +1,333 @@
+[drifblim-coach] {"model":"gemini-3.5-flash","completionStatus":"STOP","responseLength":146,"promptTokens":3594,"outputTokens":53,"totalTokens":3647}
+{
+  "status": "ok",
+  "model": "gemini-3.5-flash",
+  "source": "deterministic owner fixture (or captured public owner score); captured public matchup; real Gemini; no live writes",
+  "wordCount": 82,
+  "analysis": {
+    "verification": "engine_and_published_scores",
+    "opponentName": "Alex Morgan",
+    "comparisonState": "comparable",
+    "categories": [
+      {
+        "key": "dining_out",
+        "name": "Dining out",
+        "user": {
+          "state": "scored",
+          "earnedPoints": 11.666666666666666,
+          "maxEligiblePoints": 11.666666666666666,
+          "fraction": 1,
+          "trueZero": false
+        },
+        "opponent": {
+          "state": "scored",
+          "earnedPoints": 0,
+          "maxEligiblePoints": 11.7,
+          "fraction": 0,
+          "trueZero": true
+        },
+        "recoverablePoints": 0,
+        "lostPoints": 0
+      },
+      {
+        "key": "nightlife",
+        "name": "Nightlife",
+        "user": {
+          "state": "ineligible",
+          "earnedPoints": null,
+          "maxEligiblePoints": null,
+          "fraction": null,
+          "trueZero": false
+        },
+        "opponent": {
+          "state": "ineligible",
+          "earnedPoints": null,
+          "maxEligiblePoints": null,
+          "fraction": null,
+          "trueZero": false
+        },
+        "recoverablePoints": 0,
+        "lostPoints": null
+      },
+      {
+        "key": "entertainment",
+        "name": "Entertainment",
+        "user": {
+          "state": "scored",
+          "earnedPoints": 5.833333333333333,
+          "maxEligiblePoints": 5.833333333333333,
+          "fraction": 1,
+          "trueZero": false
+        },
+        "opponent": {
+          "state": "scored",
+          "earnedPoints": 0,
+          "maxEligiblePoints": 5.8,
+          "fraction": 0,
+          "trueZero": true
+        },
+        "recoverablePoints": 0,
+        "lostPoints": 0
+      },
+      {
+        "key": "shopping",
+        "name": "Shopping",
+        "user": {
+          "state": "scored",
+          "earnedPoints": 9.333333333333334,
+          "maxEligiblePoints": 9.333333333333334,
+          "fraction": 1,
+          "trueZero": false
+        },
+        "opponent": {
+          "state": "scored",
+          "earnedPoints": 0,
+          "maxEligiblePoints": 9.3,
+          "fraction": 0,
+          "trueZero": true
+        },
+        "recoverablePoints": 0,
+        "lostPoints": 0
+      },
+      {
+        "key": "subscriptions",
+        "name": "Subscriptions",
+        "user": {
+          "state": "scored",
+          "earnedPoints": 8.166666666666666,
+          "maxEligiblePoints": 8.166666666666666,
+          "fraction": 1,
+          "trueZero": false
+        },
+        "opponent": {
+          "state": "scored",
+          "earnedPoints": 0,
+          "maxEligiblePoints": 8.2,
+          "fraction": 0,
+          "trueZero": true
+        },
+        "recoverablePoints": 0,
+        "lostPoints": 0
+      },
+      {
+        "key": "savings",
+        "name": "Savings",
+        "user": {
+          "state": "scored",
+          "earnedPoints": 15.6,
+          "maxEligiblePoints": 25,
+          "fraction": 0.624,
+          "trueZero": false
+        },
+        "opponent": {
+          "state": "unpublished",
+          "earnedPoints": null,
+          "maxEligiblePoints": null,
+          "fraction": null,
+          "trueZero": false
+        },
+        "recoverablePoints": 9.4,
+        "lostPoints": 9.4
+      },
+      {
+        "key": "investing",
+        "name": "Investing",
+        "user": {
+          "state": "ineligible",
+          "earnedPoints": null,
+          "maxEligiblePoints": null,
+          "fraction": null,
+          "trueZero": false
+        },
+        "opponent": {
+          "state": "unpublished",
+          "earnedPoints": null,
+          "maxEligiblePoints": null,
+          "fraction": null,
+          "trueZero": false
+        },
+        "recoverablePoints": 0,
+        "lostPoints": null
+      },
+      {
+        "key": "bills",
+        "name": "Bills & debt",
+        "user": {
+          "state": "scored",
+          "earnedPoints": 20,
+          "maxEligiblePoints": 20,
+          "fraction": 1,
+          "trueZero": false
+        },
+        "opponent": {
+          "state": "unpublished",
+          "earnedPoints": null,
+          "maxEligiblePoints": null,
+          "fraction": null,
+          "trueZero": false
+        },
+        "recoverablePoints": 0,
+        "lostPoints": 0
+      }
+    ],
+    "categoryGaps": [],
+    "comparableCount": 4,
+    "opponentAllPublishedPositionsMaxed": false,
+    "opponentWeaknesses": [
+      {
+        "key": "dining_out",
+        "name": "Dining out",
+        "earnedPoints": 0,
+        "maxEligiblePoints": 11.7
+      },
+      {
+        "key": "shopping",
+        "name": "Shopping",
+        "earnedPoints": 0,
+        "maxEligiblePoints": 9.3
+      },
+      {
+        "key": "subscriptions",
+        "name": "Subscriptions",
+        "earnedPoints": 0,
+        "maxEligiblePoints": 8.2
+      },
+      {
+        "key": "entertainment",
+        "name": "Entertainment",
+        "earnedPoints": 0,
+        "maxEligiblePoints": 5.8
+      }
+    ],
+    "recoverablePoints": [
+      {
+        "key": "dining_out",
+        "points": 0,
+        "basis": "independent_verified_scenarios"
+      },
+      {
+        "key": "nightlife",
+        "points": 0,
+        "basis": "independent_verified_scenarios"
+      },
+      {
+        "key": "entertainment",
+        "points": 0,
+        "basis": "independent_verified_scenarios"
+      },
+      {
+        "key": "shopping",
+        "points": 0,
+        "basis": "independent_verified_scenarios"
+      },
+      {
+        "key": "subscriptions",
+        "points": 0,
+        "basis": "independent_verified_scenarios"
+      },
+      {
+        "key": "savings",
+        "points": 9.4,
+        "basis": "independent_verified_scenarios"
+      },
+      {
+        "key": "investing",
+        "points": 0,
+        "basis": "independent_verified_scenarios"
+      },
+      {
+        "key": "bills",
+        "points": 0,
+        "basis": "independent_verified_scenarios"
+      }
+    ],
+    "feasibleNextActions": [
+      {
+        "scenarioId": "save:4500",
+        "categoryKey": "savings",
+        "action": "save",
+        "amountCents": 4500,
+        "rawPointGain": 9.4,
+        "percentagePointGain": 11.8,
+        "completesTarget": true,
+        "verification": "existing_scoring_engine"
+      },
+      {
+        "scenarioId": "save:2500",
+        "categoryKey": "savings",
+        "action": "save",
+        "amountCents": 2500,
+        "rawPointGain": 5.2,
+        "percentagePointGain": 6.6,
+        "completesTarget": false,
+        "verification": "existing_scoring_engine"
+      }
+    ],
+    "bestNextAction": {
+      "scenarioId": "save:4500",
+      "categoryKey": "savings",
+      "action": "save",
+      "amountCents": 4500,
+      "rawPointGain": 9.4,
+      "percentagePointGain": 11.8,
+      "completesTarget": true,
+      "verification": "existing_scoring_engine"
+    },
+    "nextActionState": "verified",
+    "safeAvailableToAllocateCents": 42750,
+    "upcomingBills": [
+      {
+        "dueDate": "2026-11-15",
+        "state": "due"
+      },
+      {
+        "dueDate": "2026-11-20",
+        "state": "due"
+      }
+    ]
+  },
+  "scenario": {
+    "id": "save:2500",
+    "action": "save",
+    "amountCents": 2500,
+    "feasible": true,
+    "status": "hypothetical",
+    "verification": "existing_scoring_engine",
+    "current": {
+      "efficiencyPercent": 88.2,
+      "earnedPoints": 70.6,
+      "eligiblePoints": 80
+    },
+    "baselineForecast": {
+      "efficiencyPercent": 52.2,
+      "earnedPoints": 41.73083333333334,
+      "eligiblePoints": 80
+    },
+    "hypotheticalCurrent": {
+      "efficiencyPercent": 94.8,
+      "earnedPoints": 75.8,
+      "eligiblePoints": 80
+    },
+    "hypotheticalForecast": {
+      "efficiencyPercent": 58.7,
+      "earnedPoints": 46.93083333333334,
+      "eligiblePoints": 80
+    },
+    "rawEarnedPointDelta": 5.2,
+    "percentagePointDelta": 6.6,
+    "projectedRawPointDelta": 5.2,
+    "projectedPercentagePointDelta": 6.5,
+    "category": {
+      "key": "savings",
+      "eligible": true,
+      "beforePoints": 15.6,
+      "afterPoints": 20.8,
+      "afterEligible": true,
+      "afterAvailablePoints": 25,
+      "availablePoints": 25,
+      "remainingCapacityPoints": 9.4,
+      "remainingTargetCents": 4500
+    }
+  },
+  "text": "You're not behind in any comparable category. The next play is to add eligible points while keeping the positions you're already leading intact.\n\nAlex has no verified category edge here. You're ahead in Dining out (11.7/11.7 against 0.0/11.7) and Entertainment (5.8/5.8 against 0.0/5.8). Those points are already doing their job; target a verified opportunity elsewhere.\n\nYour best next move is savings, using cash left after bills and your reserve. Completing your remaining eligible savings target with $45 would earn another 9.4 points."
+}

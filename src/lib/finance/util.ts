@@ -16,6 +16,11 @@ export const clamp = (x: number, lo: number, hi: number): number => Math.min(hi,
 /** Round to one decimal place, used for points and percentages. */
 export const round1 = (x: number): number => Math.round(x * 10) / 10;
 
+/** Shared score display precision; never recompute engine efficiency from rounded points. */
+export const formatScoreValue = (value: number): string => round1(value).toFixed(1);
+export const formatEfficiency = (value: number | null | undefined, unavailable = '—'): string =>
+  value == null ? unavailable : `${formatScoreValue(value)}%`;
+
 export const roundDownTo = (cents: number, step: number): number =>
   step <= 1 ? Math.floor(cents) : Math.floor(cents / step) * step;
 

@@ -1,5 +1,6 @@
 import { readToken } from "../spacetime";
 import type { CoachRequest, CoachResponse } from "../../lib/coach";
+import { COACH_MAX_ANSWER } from "../../lib/coach";
 export async function askCoach(
   request: CoachRequest & { requestId: string },
   signal: AbortSignal,
@@ -23,9 +24,22 @@ export async function askCoach(
       "The coach endpoint is unavailable. Check the local server and retry.",
     );
   }
-  if (!response.ok || body.status !== "ok")
-    throw new Error(body.error || "Drifblim couldn't answer. Please retry.");
-  if (typeof body.text !== "string" || body.monthId !== request.monthId)
+  if (!body || !response.ok || body.status !== "ok")
+    throw new Error(
+      typeof body?.error === "string"
+        ? body.error
+        : "Drifblim couldn't complete an answer. Please retry.",
+    );
+  if (body.completion !== "complete")
+    throw new Error(
+      "The answer was interrupted before completion. Retry your saved question.",
+    );
+  if (
+    typeof body.text !== "string" ||
+    !body.text.trim() ||
+    body.text.length > COACH_MAX_ANSWER ||
+    body.monthId !== request.monthId
+  )
     throw new Error("Coach context changed. Please ask again.");
   return body as CoachResponse;
 }

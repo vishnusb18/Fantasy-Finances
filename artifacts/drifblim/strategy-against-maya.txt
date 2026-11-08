@@ -1,0 +1,311 @@
+[drifblim-coach] {"model":"gemini-3.5-flash","completionStatus":"STOP","responseLength":146,"promptTokens":2477,"outputTokens":53,"totalTokens":2530}
+{
+  "status": "ok",
+  "model": "gemini-3.5-flash",
+  "source": "deterministic owner fixture (or captured public owner score); captured public matchup; real Gemini; no live writes",
+  "wordCount": 80,
+  "analysis": {
+    "verification": "engine_and_published_scores",
+    "opponentName": "Maya Chen",
+    "comparisonState": "comparable",
+    "categories": [
+      {
+        "key": "dining_out",
+        "name": "Dining out",
+        "user": {
+          "state": "scored",
+          "earnedPoints": 0,
+          "maxEligiblePoints": 11.7,
+          "fraction": 0,
+          "trueZero": true
+        },
+        "opponent": {
+          "state": "scored",
+          "earnedPoints": 11.7,
+          "maxEligiblePoints": 11.7,
+          "fraction": 1,
+          "trueZero": false
+        },
+        "recoverablePoints": 0,
+        "lostPoints": 11.7
+      },
+      {
+        "key": "nightlife",
+        "name": "Nightlife",
+        "user": {
+          "state": "ineligible",
+          "earnedPoints": null,
+          "maxEligiblePoints": null,
+          "fraction": null,
+          "trueZero": false
+        },
+        "opponent": {
+          "state": "ineligible",
+          "earnedPoints": null,
+          "maxEligiblePoints": null,
+          "fraction": null,
+          "trueZero": false
+        },
+        "recoverablePoints": 0,
+        "lostPoints": null
+      },
+      {
+        "key": "entertainment",
+        "name": "Entertainment",
+        "user": {
+          "state": "scored",
+          "earnedPoints": 0,
+          "maxEligiblePoints": 5.8,
+          "fraction": 0,
+          "trueZero": true
+        },
+        "opponent": {
+          "state": "scored",
+          "earnedPoints": 5.8,
+          "maxEligiblePoints": 5.8,
+          "fraction": 1,
+          "trueZero": false
+        },
+        "recoverablePoints": 0,
+        "lostPoints": 5.8
+      },
+      {
+        "key": "shopping",
+        "name": "Shopping",
+        "user": {
+          "state": "scored",
+          "earnedPoints": 0,
+          "maxEligiblePoints": 9.3,
+          "fraction": 0,
+          "trueZero": true
+        },
+        "opponent": {
+          "state": "scored",
+          "earnedPoints": 9.3,
+          "maxEligiblePoints": 9.3,
+          "fraction": 1,
+          "trueZero": false
+        },
+        "recoverablePoints": 0,
+        "lostPoints": 9.3
+      },
+      {
+        "key": "subscriptions",
+        "name": "Subscriptions",
+        "user": {
+          "state": "scored",
+          "earnedPoints": 0,
+          "maxEligiblePoints": 8.2,
+          "fraction": 0,
+          "trueZero": true
+        },
+        "opponent": {
+          "state": "scored",
+          "earnedPoints": 8.2,
+          "maxEligiblePoints": 8.2,
+          "fraction": 1,
+          "trueZero": false
+        },
+        "recoverablePoints": 0,
+        "lostPoints": 8.2
+      },
+      {
+        "key": "savings",
+        "name": "Savings",
+        "user": {
+          "state": "unpublished",
+          "earnedPoints": null,
+          "maxEligiblePoints": null,
+          "fraction": null,
+          "trueZero": false
+        },
+        "opponent": {
+          "state": "unpublished",
+          "earnedPoints": null,
+          "maxEligiblePoints": null,
+          "fraction": null,
+          "trueZero": false
+        },
+        "recoverablePoints": 0,
+        "lostPoints": null
+      },
+      {
+        "key": "investing",
+        "name": "Investing",
+        "user": {
+          "state": "unpublished",
+          "earnedPoints": null,
+          "maxEligiblePoints": null,
+          "fraction": null,
+          "trueZero": false
+        },
+        "opponent": {
+          "state": "unpublished",
+          "earnedPoints": null,
+          "maxEligiblePoints": null,
+          "fraction": null,
+          "trueZero": false
+        },
+        "recoverablePoints": 0,
+        "lostPoints": null
+      },
+      {
+        "key": "bills",
+        "name": "Bills & debt",
+        "user": {
+          "state": "unpublished",
+          "earnedPoints": null,
+          "maxEligiblePoints": null,
+          "fraction": null,
+          "trueZero": false
+        },
+        "opponent": {
+          "state": "unpublished",
+          "earnedPoints": null,
+          "maxEligiblePoints": null,
+          "fraction": null,
+          "trueZero": false
+        },
+        "recoverablePoints": 0,
+        "lostPoints": null
+      }
+    ],
+    "categoryGaps": [
+      {
+        "key": "dining_out",
+        "name": "Dining out",
+        "user": {
+          "state": "scored",
+          "earnedPoints": 0,
+          "maxEligiblePoints": 11.7,
+          "fraction": 0,
+          "trueZero": true
+        },
+        "opponent": {
+          "state": "scored",
+          "earnedPoints": 11.7,
+          "maxEligiblePoints": 11.7,
+          "fraction": 1,
+          "trueZero": false
+        },
+        "performanceGapPoints": 11.7,
+        "rawPointGap": 11.7,
+        "recoverablePoints": 0
+      },
+      {
+        "key": "shopping",
+        "name": "Shopping",
+        "user": {
+          "state": "scored",
+          "earnedPoints": 0,
+          "maxEligiblePoints": 9.3,
+          "fraction": 0,
+          "trueZero": true
+        },
+        "opponent": {
+          "state": "scored",
+          "earnedPoints": 9.3,
+          "maxEligiblePoints": 9.3,
+          "fraction": 1,
+          "trueZero": false
+        },
+        "performanceGapPoints": 9.3,
+        "rawPointGap": 9.3,
+        "recoverablePoints": 0
+      },
+      {
+        "key": "subscriptions",
+        "name": "Subscriptions",
+        "user": {
+          "state": "scored",
+          "earnedPoints": 0,
+          "maxEligiblePoints": 8.2,
+          "fraction": 0,
+          "trueZero": true
+        },
+        "opponent": {
+          "state": "scored",
+          "earnedPoints": 8.2,
+          "maxEligiblePoints": 8.2,
+          "fraction": 1,
+          "trueZero": false
+        },
+        "performanceGapPoints": 8.2,
+        "rawPointGap": 8.2,
+        "recoverablePoints": 0
+      },
+      {
+        "key": "entertainment",
+        "name": "Entertainment",
+        "user": {
+          "state": "scored",
+          "earnedPoints": 0,
+          "maxEligiblePoints": 5.8,
+          "fraction": 0,
+          "trueZero": true
+        },
+        "opponent": {
+          "state": "scored",
+          "earnedPoints": 5.8,
+          "maxEligiblePoints": 5.8,
+          "fraction": 1,
+          "trueZero": false
+        },
+        "performanceGapPoints": 5.8,
+        "rawPointGap": 5.8,
+        "recoverablePoints": 0
+      }
+    ],
+    "comparableCount": 4,
+    "opponentAllPublishedPositionsMaxed": true,
+    "opponentWeaknesses": [],
+    "recoverablePoints": [
+      {
+        "key": "dining_out",
+        "points": 0,
+        "basis": "independent_verified_scenarios"
+      },
+      {
+        "key": "nightlife",
+        "points": 0,
+        "basis": "independent_verified_scenarios"
+      },
+      {
+        "key": "entertainment",
+        "points": 0,
+        "basis": "independent_verified_scenarios"
+      },
+      {
+        "key": "shopping",
+        "points": 0,
+        "basis": "independent_verified_scenarios"
+      },
+      {
+        "key": "subscriptions",
+        "points": 0,
+        "basis": "independent_verified_scenarios"
+      },
+      {
+        "key": "savings",
+        "points": 0,
+        "basis": "independent_verified_scenarios"
+      },
+      {
+        "key": "investing",
+        "points": 0,
+        "basis": "independent_verified_scenarios"
+      },
+      {
+        "key": "bills",
+        "points": 0,
+        "basis": "independent_verified_scenarios"
+      }
+    ],
+    "feasibleNextActions": [],
+    "bestNextAction": null,
+    "nextActionState": "baseline_missing",
+    "safeAvailableToAllocateCents": null,
+    "upcomingBills": []
+  },
+  "text": "Your biggest gaps are Dining out (11.7 points off their pace), Shopping (9.3 points off their pace), and Subscriptions (8.2 points off their pace). Those deficits aren't automatically recoverable; focus on verified opportunities.\n\nMaya is maxed in every published scored position: Dining out 11.7/11.7 versus your 0.0/11.7; Shopping 9.3/9.3 versus your 0.0/9.3.\n\nI need your locked baseline before I can verify a funded scoring move. There isn't a confirmed action or point gain to recommend from the available information yet."
+}

@@ -1,3 +1,4 @@
+import { formatEfficiency } from "../lib/finance/util";
 import { useMemo } from "react";
 import { categoryLabel } from "../lib/finance/scoring";
 import { useCloud, STDB_DB } from "./spacetime";
@@ -103,7 +104,7 @@ export function LiveLeague({ month }: { month: string }) {
                     </small>
                   </td>
                   <td className="num">
-                    {r.pct === null ? "—" : `${r.pct.toFixed(1)}%`}
+                    {formatEfficiency(r.pct)}
                   </td>
                   <td className="num">
                     {r.earned.toFixed(1)} / {r.available.toFixed(1)}

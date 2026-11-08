@@ -199,6 +199,7 @@
   flex: 1;
   min-height: 0;
   overflow-y: auto;
+  overflow-x: hidden;
   overscroll-behavior: contain;
   padding: 16px;
   scrollbar-color: #a483c8 #1e142b;
@@ -228,6 +229,8 @@
   background: #483252;
 }
 .coach-message {
+  box-sizing: border-box;
+  min-width: 0;
   max-width: 94%;
   padding: 10px 12px;
   margin: 0 0 12px;

@@ -2,11 +2,15 @@
 
 Run `npm run dev` and open http://localhost:5173/. After PLAY finishes, Drifblim appears underneath My Finances. Click the companion from any tab to open the coach; Escape or Close returns focus to its nook. The exact supplied transparent sprites live in `public/assets/mascot/` and remain byte-for-byte unchanged.
 
+See [COACH_RELIABILITY.md](COACH_RELIABILITY.md) for paired scenario validation, structured Gemini explanations, completion checks and the reliability test results.
+
+See [COACH_STRATEGY.md](COACH_STRATEGY.md) for concise matchup replies, verified point-gap rankings, category availability and the Maya/Alex checks.
+
 ## Server and model
 
 - `POST /api/coach/chat` runs in the existing Vite server, alongside the Make a Move middleware. No separate process is needed for local development.
 - Vite's server-side `loadEnv(mode, process.cwd(), '')` loads `GEMINI_API_KEY`, `NESSIE_API_KEY`, and optional `GEMINI_MODEL` from `.env.local`. Only the server receives these secrets; the client bundle contains neither key.
-- The official `@google/genai` SDK calls `models.generateContent`, with default model **`gemini-3.5-flash`**, API version `v1beta`, a 20-second model timeout and 900-token output budget. `GEMINI_MODEL` overrides the default. This model was verified with the configured key.
+- The official `@google/genai` SDK calls `models.generateContent`, with default model **`gemini-3.5-flash`**, API version `v1beta`, a 30-second model timeout and 2,048-token output budget. `GEMINI_MODEL` overrides the default. This model was verified with the configured key.
 - Request fields are `message`, `monthId`, optional bounded `history`, `requestId`, and an optional `expectedPlayerKey` consistency check. The existing SpacetimeDB bearer token is sent in the Authorization header. A client player identifier never grants access.
 - This follows the existing development-server API pattern. A static `dist/` deployment or `vite preview` alone does not host the coach or the existing banking middleware; a deployed server adapter would be needed for those endpoints.
 
@@ -34,7 +38,7 @@ Conversations stay in memory, separated by source, authenticated selected player
 
 ## Verification
 
-- `npm run build`, `npm test`: build passes; 140 tests pass, including context privacy, affordability, historical/pending states, projections, request validation, rate limits, retries and actual session-ownership gates. Existing Make a Move tests still pass.
+- `npm run build`, `npm test`: build passes; 173 tests pass, including context privacy, affordability, historical/pending states, projections, request validation, rate limits, retries and actual session-ownership gates. Existing Make a Move tests still pass.
 - `npm run smoke`: all six sample players render across Matchup, League, Reports and finance sections.
 - `npm run verify:coach`: makes a **real Gemini request** using the same production generation function and a deterministic financial test fixture. It never writes live league data. The configured model returned the verified $25 savings scenario: 88.2% → 94.8%, +6.6 percentage points / +5.2 raw earned points. The script clearly labels the fixture and prints no credentials.
 - Browser checks and screenshots are in `artifacts/drifblim/`. They cover ATM gating, drift, flight, keyboard focus, month isolation, mobile layouts, reduced motion, offline errors and endpoint rejections. Chat transport tests use explicitly labeled fixtures for retry and follow-up behavior.

@@ -1,3 +1,4 @@
+import { formatScoreValue } from "../lib/finance/util";
 import type { CSSProperties } from "react";
 import type { PublicScore } from "../lib/competition/engine";
 import {
@@ -95,7 +96,9 @@ export function MatchupTicket({
                 {projection !== undefined ? "Actual" : "Final efficiency"}
               </p>
               <div className="big-score">
-                {score.efficiency?.toFixed(1) ?? "—"}
+                {score.efficiency == null
+                  ? "—"
+                  : formatScoreValue(score.efficiency)}
                 <span>%</span>
               </div>
               <p className="sub">
@@ -106,7 +109,9 @@ export function MatchupTicket({
               <div className="expected-score">
                 <p className="eyebrow">PROJECTED</p>
                 <strong>
-                  {projection?.efficiency?.toFixed(1) ?? "—"}
+                  {projection?.efficiency == null
+                    ? "—"
+                    : formatScoreValue(projection.efficiency)}
                   <small>{projection?.efficiency != null ? "%" : ""}</small>
                 </strong>
                 {!projection && <small>Insufficient data</small>}
