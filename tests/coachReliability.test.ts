@@ -88,6 +88,9 @@ function sdk(text: string, finishReason: string | undefined = "STOP") {
   };
 }
 const plan = JSON.stringify({ explanationIds: [], recommendationIds: [] });
+/** A verified statement Gemini may quote (its numbers come from the engine). */
+const verifiedForecast = (context: ReturnType<typeof fixture>["context"]) =>
+  explanationCatalog(context).facts.find((f) => f.id === "scenario.forecast")!.text;
 
 describe("engine-only paired scenario ledger", () => {
   it("saving $25 at 25/25 yields no current or forecast gain, despite a different baseline forecast", () => {
@@ -238,10 +241,11 @@ describe("Gemini completion and telemetry", () => {
       catalog.facts.find((f) => f.id === "opponent.weakest")!.text,
     ).toMatch(/Shopping: 50.0%/);
   });
-  it("accepts STOP with validated structured explanation and safe metadata", async () => {
-    const { ai, generateContent } = sdk(plan),
-      log = vi.fn(),
-      context = fixture().context;
+  it("accepts Gemini's own wording when every number is verified, with safe metadata", async () => {
+    const context = fixture().context;
+    const reply = `Short answer: it helps. ${verifiedForecast(context)}`;
+    const { ai, generateContent } = sdk(reply),
+      log = vi.fn();
     const answer = await generateCoachReply(
       ai,
       "gemini-3.5-flash",
@@ -249,20 +253,64 @@ describe("Gemini completion and telemetry", () => {
       { message: question, monthId: "2026-11" },
       log,
     );
-    expect(answer).toContain("Month-end forecast: baseline");
-    expect(generateContent.mock.calls[0]).toBeDefined();
+    expect(answer).toBe(reply);
+    expect(generateContent).toHaveBeenCalledOnce();
     expect(log).toHaveBeenCalledWith({
       model: "gemini-3.5-flash",
       completionStatus: "STOP",
-      responseLength: plan.length,
+      responseLength: reply.length,
       promptTokens: 100,
       outputTokens: 40,
       thinkingTokens: 12,
       totalTokens: 152,
+      verification: "verified",
     });
     expect(JSON.stringify(log.mock.calls)).not.toMatch(
       /transactions|apiKey|account|Maya/,
     );
+  });
+  it("never shows an invented number: retries once with feedback, then falls back to the verified template", async () => {
+    const context = fixture().context;
+    const { ai, generateContent } = sdk(
+      "Save $999.99 and you'll gain 42.7 points, guaranteed.",
+    );
+    const log = vi.fn();
+    const answer = await generateCoachReply(
+      ai,
+      "test",
+      context,
+      { message: question, monthId: "2026-11" },
+      log,
+    );
+    expect(generateContent).toHaveBeenCalledTimes(2);
+    const retry = generateContent.mock.calls[1] as unknown as [
+      { contents: { parts: { text: string }[] }[] },
+    ];
+    expect(retry[0].contents.at(-1)!.parts[0].text).toMatch(/\$999\.99.*42\.7/);
+    expect(answer).not.toMatch(/999|42\.7/);
+    expect(answer).toContain("Month-end forecast: baseline"); // verified template
+    expect(log.mock.calls.at(-1)![0]).toMatchObject({
+      verification: "template_fallback",
+      rejectedNumbers: 2,
+    });
+  });
+  it("uses the retry when Gemini fixes its numbers after feedback", async () => {
+    const context = fixture().context;
+    const fixed = `Here's the verified picture. ${verifiedForecast(context)}`;
+    const { ai, generateContent } = sdk("You'd gain 42.7 points.");
+    generateContent.mockResolvedValueOnce({
+      text: "You'd gain 42.7 points.",
+      candidates: [{ finishReason: "STOP" }],
+    } as never);
+    generateContent.mockResolvedValueOnce({
+      text: fixed,
+      candidates: [{ finishReason: "STOP" }],
+    } as never);
+    const log = vi.fn();
+    expect(
+      await generateCoachReply(ai, "test", context, { message: question, monthId: "2026-11" }, log),
+    ).toBe(fixed);
+    expect(log.mock.calls.at(-1)![0].verification).toBe("retried");
   });
   it.each(["MAX_TOKENS", "SAFETY", undefined])(
     "rejects %s even if its text looks like valid complete JSON",
@@ -285,12 +333,8 @@ describe("Gemini completion and telemetry", () => {
       ).rejects.toMatchObject({ code: "incomplete_response" });
     },
   );
-  it.each([
-    "",
-    '{"explanationIds":[',
-    JSON.stringify({ explanationIds: ["invented"], recommendationIds: [] }),
-  ])(
-    "rejects empty, malformed or unverifiable content, never a partial success",
+  it.each(["", "   \n  "])(
+    "rejects an empty answer, never a partial success",
     async (text) => {
       const { ai } = sdk(text);
       await expect(
@@ -301,7 +345,7 @@ describe("Gemini completion and telemetry", () => {
           { message: question, monthId: "2026-11" },
           vi.fn(),
         ),
-      ).rejects.toMatchObject({ status: 502 });
+      ).rejects.toMatchObject({ status: 502, code: "empty_response" });
     },
   );
   it("logs sanitized failures without raw SDK errors or credentials", async () => {
@@ -338,9 +382,9 @@ describe("complete response transport and retries", () => {
     requestId: "reliability-question-0001",
   };
   it("does not cache an interrupted Gemini result and retries the identical request successfully", async () => {
-    const { data, session } = fixture();
+    const { data, session, context } = fixture();
     const incomplete = sdk(plan, "MAX_TOKENS");
-    const complete = sdk(plan, "STOP");
+    const complete = sdk(verifiedForecast(context), "STOP");
     const generate = vi
       .fn()
       .mockImplementationOnce((context, question) =>

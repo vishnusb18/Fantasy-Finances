@@ -465,10 +465,15 @@ describe("concise grounded strategy rendering", () => {
       }
     }
   });
-  it("sends the verified analysis and concise schema through the existing Gemini path", async () => {
+  it("sends the verified analysis and facts to Gemini and returns its own wording when every number checks out", async () => {
     const context = fixture().context;
+    const best = explanationCatalog(context).facts.find(
+      (f) => f.id === "strategy.action.best",
+    )!.text;
+    expect(best).toMatch(/9.4 points\.$/);
+    const reply = `You're ahead where it counts against Alex, so protect those leads. ${best}`;
     const generateContent = vi.fn(async (_request: unknown) => ({
-      text: JSON.stringify(plan),
+      text: reply,
       candidates: [{ finishReason: "STOP" }],
     }));
     const text = await generateCoachReply(
@@ -479,7 +484,7 @@ describe("concise grounded strategy rendering", () => {
       vi.fn(),
     );
     const request = generateContent.mock.calls[0][0] as {
-      config: { systemInstruction: string; responseJsonSchema: unknown };
+      config: { systemInstruction: string; responseJsonSchema?: unknown };
     };
     expect(
       request.config.systemInstruction.startsWith(`${COACH_SYSTEM_MESSAGE}\n`),
@@ -489,6 +494,9 @@ describe("concise grounded strategy rendering", () => {
     );
     expect(request.config.systemInstruction).toContain('"categoryGaps"');
     expect(request.config.systemInstruction).toContain('"feasibleNextActions"');
-    expect(text).toMatch(/9.4 points\.$/);
+    expect(request.config.systemInstruction).toContain(best);
+    expect(request.config.responseJsonSchema).toBeUndefined();
+    expect(text).toBe(reply);
+    expect(generateContent).toHaveBeenCalledOnce();
   });
 });
