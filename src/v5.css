@@ -141,8 +141,11 @@
 }
 .ticket,
 .position-ticket {
-  background: linear-gradient(145deg, #fff0c7, #ffe4a2);
-  border-color: #fff0c7;
+  background: #a1cca5;
+  border-color: #a1cca5;
+}
+.ticket::before {
+  background: none;
 }
 .ticket .mini-stat {
   background: #fff0c780;

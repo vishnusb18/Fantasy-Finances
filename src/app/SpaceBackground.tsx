@@ -15,12 +15,12 @@ function starfield() {
   }).join("");
   return `url("data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000">${stars}</svg>`)}")`;
 }
-const stars = starfield();
+export const spaceStars = starfield();
 export function SpaceBackground() {
   return (
     <div className="space-background" aria-hidden="true">
       <div className="space-nebula" />
-      <div className="space-stars" style={{ backgroundImage: stars }} />
+      <div className="space-stars" style={{ backgroundImage: spaceStars }} />
     </div>
   );
 }

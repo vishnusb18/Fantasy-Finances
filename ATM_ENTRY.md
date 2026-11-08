@@ -19,7 +19,7 @@ The image copy has the same SHA-1 as the original: `7f5d52311762cedefa69cd332ca3
 1. The full-screen landing shows the original image. No dashboard or extra visible button is rendered over it.
 2. A native, transparent button covers the red PLAY artwork. It has the accessible name **Enter Fantasy Finance**, pointer cursor, keyboard focus outline and native Enter/Space behavior.
 3. Entry mounts the existing app once, while it is hidden from assistive technology and inert. The image scales around the center of the ATM display while the ambient image fades and the starfield fills the viewport.
-4. The app fades into the starfield, then the ATM layers are removed completely. Focus moves to the existing Matchup heading. Navigation, tickets, bubbles, cars, standings, reports and finances remain the current app.
+4. The existing Matchup screen fades in over the starfield as PLAY dissolves and the ATM zoom completes. Focus then moves to the Matchup heading. Navigation, tickets, bubbles, cars, standings, reports and finances remain the current app.
 5. Reloading returns to the landing. Existing saved data-source, baseline, correction and goal behavior is unchanged.
 
 ## Palette and responsive treatment
@@ -52,3 +52,7 @@ The final starfield is procedural artwork matched to the reference's dark-purple
 | League | [Desktop](artifacts/atm-entry/league-desktop.png) | [Mobile](artifacts/atm-entry/league-mobile.png) |
 | Reports | [Desktop](artifacts/atm-entry/reports-desktop.png) | [Mobile](artifacts/atm-entry/reports-mobile.png) |
 | My Finances | [Desktop](artifacts/atm-entry/my-finances-desktop.png) | [Mobile](artifacts/atm-entry/my-finances-mobile.png) |
+
+## Direct PLAY-to-Matchup fade
+
+The original ATM, PLAY hotspot and 1.1-second zoom remain unchanged. PLAY dissolves in the first 225 ms, while Matchup fades in from 18% to 76% of the same timeline. The ATM remains opaque through 50% and fades away by 90%, maintaining an overlapping handoff without a blank pause. There are no staggered card animations, slides or drops. Reduced motion retains the short fade.

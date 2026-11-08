@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import App from "../App";
 import { ATM_REFERENCE, entryGeometry } from "./entryGeometry";
-import { SpaceBackground } from "./SpaceBackground";
+import { SpaceBackground, spaceStars } from "./SpaceBackground";
 export const ENTRY_DURATION = 1100;
 export const REDUCED_ENTRY_DURATION = 220;
 const viewport = () =>
@@ -50,7 +50,9 @@ export function EntryExperience({
       () => setStage("app"),
       reduced ? REDUCED_ENTRY_DURATION : ENTRY_DURATION,
     );
-    return () => window.clearTimeout(timer);
+    return () => {
+      window.clearTimeout(timer);
+    };
   }, [stage, reduced]);
   useEffect(() => {
     if (!app.current) return;
@@ -115,6 +117,20 @@ export function EntryExperience({
                 setImage((current) => ({ ...current, failed: true }))
               }
             />
+            {stage === "entering" && (
+              <div
+                className="atm-play-dissolve"
+                aria-hidden="true"
+                style={{
+                  left: `${(play.x - 0.038) * 100}%`,
+                  top: `${(play.y - 0.045) * 100}%`,
+                  width: `${(play.width + 0.076) * 100}%`,
+                  height: `${(play.height + 0.09) * 100}%`,
+                  backgroundImage: spaceStars,
+                  backgroundSize: `${geometry.width}px ${geometry.height}px`,
+                }}
+              />
+            )}
             {image.ready && (
               <button
                 className="atm-play-hotspot"

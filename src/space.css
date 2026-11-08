@@ -26,7 +26,7 @@ body {
   pointer-events: none;
   overflow: hidden;
   background: #0b0716;
-  opacity: 0;
+  opacity: 1;
 }
 .space-nebula {
   position: absolute;
@@ -43,10 +43,6 @@ body {
   background-size: cover;
   background-position: center;
   opacity: 0.68;
-}
-.is-entering .space-background {
-  z-index: 3;
-  animation: starfield-entry 1100ms ease both;
 }
 .is-app .space-background {
   opacity: 1;
@@ -120,6 +116,21 @@ body {
 .is-entering .atm-ambient {
   animation: ambient-exit 1100ms ease both;
 }
+.is-entering .atm-landing {
+  animation: landing-handoff 1100ms ease both;
+}
+.atm-play-dissolve {
+  position: absolute;
+  pointer-events: none;
+  opacity: 0;
+  background-color: #0b0716;
+  background-position: center;
+  mask-image:
+    linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent),
+    linear-gradient(0deg, transparent, #000 10%, #000 90%, transparent);
+  mask-composite: intersect;
+  animation: play-dissolve 225ms ease-out both;
+}
 .space-app {
   position: relative;
   z-index: 4;
@@ -175,25 +186,32 @@ body {
     opacity: 0;
   }
 }
-@keyframes starfield-entry {
-  0%,
-  30% {
+@keyframes play-dissolve {
+  from {
     opacity: 0;
   }
-  75%,
-  100% {
+  to {
     opacity: 1;
+  }
+}
+@keyframes landing-handoff {
+  0%,
+  50% {
+    opacity: 1;
+  }
+  90%,
+  100% {
+    opacity: 0;
   }
 }
 @keyframes app-entry {
   0%,
-  65% {
+  18% {
     opacity: 0;
-    transform: translateY(8px);
   }
+  76%,
   100% {
     opacity: 1;
-    transform: translateY(0);
   }
 }
 /* Cosmic surroundings; gold tickets and antique-gold comparison modules keep their identity. */
