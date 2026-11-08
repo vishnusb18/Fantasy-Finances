@@ -148,6 +148,38 @@ export function useFinance() {
   // Where player state lives right now. "wait" holds the restore briefly while
   // the first SpacetimeDB connection is being made.
   const cloud = useCloud();
+  const selectedSource = useRef(source);
+  selectedSource.current = source;
+  const refreshNessie = useCallback(async () => {
+    if (source.kind !== "nessie" || !source.customerId) return;
+    const next = nessieToProviderData(
+      await nessie.fetchBundle(source.customerId),
+      "nessie",
+    );
+    const current = selectedSource.current;
+    if (current.kind === "nessie" && current.customerId === source.customerId)
+      setData(next);
+  }, [source]);
+  const ownVersion = cloud.scores
+    .filter((s) => s.playerKey === playerId && s.month === month)
+    .reduce(
+      (latest, s) =>
+        s.updatedAt.microsSinceUnixEpoch > latest
+          ? s.updatedAt.microsSinceUnixEpoch
+          : latest,
+      0n,
+    )
+    .toString();
+  const lastOwnVersion = useRef("");
+  useEffect(() => {
+    if (source.kind !== "nessie" || !playerId || ownVersion === "0") return;
+    const version = `${playerId}:${ownVersion}`;
+    if (lastOwnVersion.current === version) return;
+    lastOwnVersion.current = version;
+    void refreshNessie().catch(() =>
+      setError("Couldn't refresh the latest Nessie activity."),
+    );
+  }, [source.kind, playerId, ownVersion, refreshNessie]);
   const storeMode =
     cloud.status === "ready"
       ? "cloud"
@@ -220,7 +252,8 @@ export function useFinance() {
   useEffect(() => {
     if (!playerId || storeMode === "wait") return;
     const local = {
-      overrides: store.get<CategoryOverride[]>(`ff:overrides:${playerId}`) ?? [],
+      overrides:
+        store.get<CategoryOverride[]>(`ff:overrides:${playerId}`) ?? [],
       confirmations: store.get<PlayerConfirmations>(`ff:confirm:${playerId}`),
       baseline: store.get<ScoringBaseline>(k("baseline")),
       personal: store.get<PersonalBudget>(k("personal")),
@@ -236,7 +269,7 @@ export function useFinance() {
 
     // Cloud is the source of truth. Anything saved only in this browser (e.g.
     // while offline) is uploaded so it isn't lost.
-    const parse = <T,>(json?: string) => {
+    const parse = <T>(json?: string) => {
       if (!json) return undefined;
       try {
         return JSON.parse(json) as T;
@@ -255,7 +288,11 @@ export function useFinance() {
       lockRemote(local.baseline);
     }
     let personal = parse<PersonalBudget>(ms?.personalBudgetJson ?? undefined);
-    if (!personal && local.personal && local.personal.baselineId === baseline?.id) {
+    if (
+      !personal &&
+      local.personal &&
+      local.personal.baselineId === baseline?.id
+    ) {
       personal = local.personal;
       savePersonalRemote(local.personal);
     }
@@ -370,7 +407,11 @@ export function useFinance() {
 
   const recategorize = useCallback(
     (transactionId: string, category: TransactionCategory) => {
-      const o = { transactionId, category, correctedAt: new Date().toISOString() };
+      const o = {
+        transactionId,
+        category,
+        correctedAt: new Date().toISOString(),
+      };
       const next = [
         ...overrides.filter((x) => x.transactionId !== transactionId),
         o,
@@ -453,9 +494,12 @@ export function useFinance() {
     applyCorrectionsToBaseline,
     editPersonal,
     resetPlayer,
+    refreshNessie,
     cloudStatus: cloud.status,
     cloudError,
   };
 }
 
-export type FinanceState = ReturnType<typeof useFinance> & { readOnly?: boolean };
+export type FinanceState = ReturnType<typeof useFinance> & {
+  readOnly?: boolean;
+};

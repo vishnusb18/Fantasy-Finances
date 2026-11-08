@@ -35,6 +35,7 @@ import {
 } from "./PotentialComparison";
 import { rankMovement } from "../lib/competition/presentation";
 import { AchievementIcon } from "./AchievementIcon";
+import { MakeAMove } from "./MakeAMove";
 const pct = (n: number | null | undefined) => (n == null ? "—" : n.toFixed(1));
 const monthName = (m: string) =>
   new Date(`${m}-02T12:00:00`).toLocaleDateString("en-US", {
@@ -114,7 +115,8 @@ export function Competition({
     f.source.kind === "sample"
       ? f.source.persona
       : live?.members.find(
-          (m) => f.source.kind === "nessie" && m.customerId === f.source.customerId,
+          (m) =>
+            f.source.kind === "nessie" && m.customerId === f.source.customerId,
         )?.key;
   const ownDataLoaded =
     !!f.data &&
@@ -141,7 +143,16 @@ export function Competition({
           : undefined,
         liveReady ? live!.data : undefined,
       ),
-    [f.asOf, ownKey, ownDataLoaded, f.result, f.data, f.month, liveReady, live?.data],
+    [
+      f.asOf,
+      ownKey,
+      ownDataLoaded,
+      f.result,
+      f.data,
+      f.month,
+      liveReady,
+      live?.data,
+    ],
   );
   const player =
     ownKey && league.members.includes(ownKey) ? ownKey : league.members[0];
@@ -221,7 +232,31 @@ export function Competition({
               {league.live ? "LIVE · NESSIE" : "SAMPLE LEAGUE"}
             </span>
           </p>
-          <h1>{tab}</h1>
+          <div className="matchup-title-row">
+            <h1>{tab}</h1>
+            {tab === "Matchup" && match && (
+              <MakeAMove
+                key={`${f.data?.playerId ?? "loading"}:${month}`}
+                f={f}
+                month={month}
+                involvesPlayer={match.a === ownKey || match.b === ownKey}
+                opponent={
+                  ownKey && (match.a === ownKey || match.b === ownKey)
+                    ? {
+                        name: name(match.a === ownKey ? match.b : match.a),
+                        actual:
+                          match.scores[match.a === ownKey ? match.b : match.a]
+                            ?.efficiency ?? null,
+                        projected:
+                          league.periods[month][
+                            match.a === ownKey ? match.b : match.a
+                          ]?.projection.score?.efficiencyPct ?? null,
+                      }
+                    : null
+                }
+              />
+            )}
+          </div>
         </div>
         {tab === "Reports" && (
           <MonthNavigation

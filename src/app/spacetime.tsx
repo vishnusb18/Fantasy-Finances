@@ -16,7 +16,7 @@ import { DbConnection, tables } from "../module_bindings";
  * shared live league. When the server is unreachable the app keeps working
  * from localStorage and says so in the top bar.
  */
-const env = import.meta.env;
+const env = import.meta.env ?? { MODE: "test" };
 // Shared league on maincloud by default; set VITE_SPACETIMEDB_HOST=ws://localhost:3000 for a local server.
 export const STDB_URI: string =
   env.VITE_SPACETIMEDB_HOST || "wss://maincloud.spacetimedb.com";
@@ -27,7 +27,7 @@ const TOKEN_KEY = `${STDB_URI}/${STDB_DB}/auth_token`;
 /** How long to wait for a connection before falling back to browser storage. */
 const CONNECT_GRACE_MS = 4000;
 
-const readToken = () => {
+export const readToken = () => {
   try {
     return localStorage.getItem(TOKEN_KEY) ?? undefined;
   } catch {

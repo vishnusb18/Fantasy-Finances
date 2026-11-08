@@ -9,6 +9,7 @@ spacetime.local.json
 # Local secrets (Nessie API key lives here)
 .env*.local
 .env
+/.sandbox-moves/
 
 # TypeScript build cache
 *.tsbuildinfo

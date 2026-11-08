@@ -12,6 +12,7 @@ import './achievements.css';
 import './score-columns.css';
 import './animal-avatars.css';
 import './live-league.css';
+import './make-a-move.css';
 
 import { SpacetimeRoot } from './app/spacetime';
 

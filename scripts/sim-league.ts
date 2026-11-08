@@ -31,6 +31,7 @@ import type {
 } from '../src/lib/finance/adapters/nessie/types';
 import { nessieToProviderData } from '../src/lib/finance/adapters/nessie/toProviderData';
 import { runFinancePipeline } from '../src/lib/finance/pipeline';
+import { scoreMoveData } from '../src/lib/competition/moves';
 import type { ScoringBaseline } from '../src/lib/finance/types';
 import { isoDate, monthOf } from '../src/lib/finance/util';
 import { MEMBERS } from '../src/lib/competition/demo';
@@ -221,7 +222,7 @@ async function setupBot(spec: (typeof MEMBERS)[number], customers: NessieCustome
 }
 
 const scoreOf = (bot: Bot, bundle: NessieBundle) =>
-  runFinancePipeline({
+  scoreMoveData({
     data: nessieToProviderData(bundle, 'nessie'),
     asOf: localToday(),
     lockedBaseline: bot.baseline,
