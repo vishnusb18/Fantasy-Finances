@@ -1,0 +1,353 @@
+/* Canonical font roles and arcade text palette. Geometry and animation stay in the existing themes. */
+:root {
+  --font-ui: "Pixelify Sans", system-ui, sans-serif;
+  --font-arcade: "Press Start 2P", "Pixelify Sans", monospace;
+  --font-data: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-numbers: var(--font-ui);
+  --type-purple: #b78cff;
+  --type-highlight: #d6b8ff;
+  --type-on-card: #321c58;
+  --type-on-dark: #f5eeff;
+  --type-gold: #f4c45b;
+  --accent: var(--type-purple);
+  font-family: var(--font-ui);
+}
+body {
+  font-family: var(--font-ui);
+  color: var(--type-on-dark);
+}
+button,
+select,
+input,
+textarea {
+  font-family: var(--font-ui);
+}
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.eyebrow,
+.player-name,
+.manager-button,
+.main-nav,
+.chip,
+.month-title {
+  font-family: var(--font-ui);
+}
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.eyebrow {
+  letter-spacing: 0;
+}
+.space-app .competition-heading h1,
+.space-app .finances-heading h1,
+.space-app .section-title h2,
+.sidebar .brand h1 {
+  color: var(--type-purple);
+  letter-spacing: 0;
+}
+.space-app .main-nav button {
+  color: var(--type-on-dark);
+}
+.space-app .main-nav button.active {
+  color: var(--type-on-card);
+  background: var(--type-purple);
+  border-color: var(--type-highlight);
+}
+.space-app .main-nav button:hover:not(.active) {
+  color: var(--type-highlight);
+}
+.space-app .source .seg button {
+  color: var(--type-on-dark);
+}
+.space-app .source .seg button.on {
+  color: var(--type-on-card);
+}
+.space-app .month-title,
+.space-app .live-status,
+.space-app .finance-status,
+.space-app .report-status {
+  color: var(--type-highlight);
+}
+.month-navigation button:hover:not(:disabled) {
+  color: var(--type-on-card);
+  background: var(--type-highlight);
+}
+.space-app .match-verdict,
+.space-app .match-verdict strong,
+.space-app .match-verdict > span {
+  color: var(--type-on-dark);
+}
+.card,
+.ticket,
+.position-ticket,
+.race-match,
+.award-card,
+.position-leader,
+.sidebar-league {
+  color: var(--type-on-card);
+}
+.space-app .card .section-title h2,
+.card h2,
+.card h3,
+.card h4,
+.ticket h2,
+.ticket .big-score,
+.ticket.away .big-score,
+.position-ticket .points,
+.position-heading h3,
+.position-leader b,
+.award-person > b {
+  color: var(--type-on-card);
+}
+.ticket .eyebrow,
+.ticket .sub,
+.ticket .score-phase,
+.ticket .mini-stat > span,
+.position-ticket .player-name,
+.position-ticket .ticket-rate,
+.position-ticket .position-projected {
+  color: var(--type-on-card);
+}
+.ticket h2,
+.manager-button strong,
+.player-name {
+  letter-spacing: 0;
+}
+.card .link,
+.card .notes summary,
+.scoring-help summary,
+.chart-help summary,
+.view-scoring,
+.card .legend-item.active strong {
+  color: var(--type-on-card);
+}
+.legend-item.active {
+  border-color: var(--type-on-card);
+}
+.legend-item.active .swatch {
+  outline: 2px solid var(--type-on-card);
+  outline-offset: 2px;
+}
+.main-nav button:focus-visible,
+button:focus-visible,
+select:focus-visible,
+input:focus-visible,
+summary:focus-visible {
+  outline-color: var(--type-highlight);
+}
+.card button:focus-visible,
+.card summary:focus-visible,
+.pie-seg:focus-visible,
+.atm-play-hotspot:focus-visible {
+  outline-color: var(--type-purple);
+}
+/* Press Start is reserved for short, featured arcade labels. PLAY remains the original image artwork. */
+.atm-play-hotspot,
+.award-card .eyebrow,
+.versus,
+.position-between > strong {
+  font-family: var(--font-arcade);
+  font-weight: 400;
+  letter-spacing: 0;
+}
+.award-card .eyebrow {
+  font-size: 8px;
+  line-height: 1.8;
+  overflow-wrap: anywhere;
+  color: var(--type-on-card);
+}
+.versus {
+  font-size: 11px;
+}
+.position-between > strong {
+  font-size: 9px;
+}
+/* Inter remains for dense explanatory prose and transaction descriptions. */
+.table,
+.history-item,
+.activity-explanation,
+.position-detail p:not(.eyebrow),
+.notes p,
+.notes li,
+.scoring-help p,
+.scoring-help li,
+.chart-help p,
+.why,
+.pending,
+.fineprint {
+  font-family: var(--font-data);
+}
+/* All numeric displays and inputs now share the app's Pixelify face. */
+.financial-summary,
+.financial-summary > .chip,
+.match-verdict strong:last-child,
+.money,
+input[type="number"],
+.dollar-input,
+.table .num,
+.table .rank,
+.table tbody td:first-child,
+.table tbody td:nth-child(n + 3),
+.history-item > div > span,
+.history-item p,
+.big-score,
+.expected-score > strong,
+.points,
+.score-num,
+.score-sub,
+.comp-pts,
+.wf-value,
+.stat-value,
+.budget-official,
+.budget-actual,
+.comparison-labels,
+.chart-axis,
+.race-meter,
+.race-projections,
+.race-caption,
+.award-person > b,
+.position-leader > b,
+.position-leader > small,
+.pie-legend .legend-item small,
+.pie-legend .legend-item > .chip,
+.mini-stat > strong,
+.ticket .scoreline > .sub,
+.ticket .scoreline > div > .sub,
+.ticket-rate,
+.position-projected,
+.public-breakdown strong,
+.mini-standing > b,
+.mini-standing > small {
+  font-family: var(--font-numbers);
+  font-variant-numeric: tabular-nums;
+}
+.table th,
+.table .manager-button,
+.table .manager-button strong,
+.budget-label,
+.budget-head {
+  font-family: var(--font-ui);
+}
+.table select,
+.table input,
+.confirm input {
+  font-family: var(--font-data);
+}
+.table input[type="number"],
+.confirm input[type="number"] {
+  font-family: var(--font-numbers);
+}
+/* Shared score tokens prevent home/away breakpoint rules from diverging. */
+.ticket {
+  --matchup-actual-size: 48px;
+  --matchup-projected-size: 32px;
+  --matchup-unit-size: 14px;
+}
+.ticket .big-score,
+.ticket.away .big-score {
+  font-family: var(--font-numbers);
+  font-size: var(--matchup-actual-size);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: 0;
+  color: var(--type-on-card);
+  white-space: nowrap;
+}
+.ticket .expected-score > strong {
+  font-family: var(--font-numbers);
+  font-size: var(--matchup-projected-size);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: 0;
+  color: var(--type-on-card);
+  white-space: nowrap;
+}
+.ticket .big-score > span,
+.ticket .expected-score > strong > small {
+  font-family: var(--font-numbers);
+  font-size: var(--matchup-unit-size);
+  font-weight: 700;
+  letter-spacing: 0;
+  line-height: 1;
+  color: var(--type-on-card);
+}
+.ticket .score-phase,
+.ticket .expected-score .eyebrow {
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--type-on-card);
+  margin: 0 0 4px;
+}
+@media (max-width: 1100px) {
+  .ticket {
+    --matchup-actual-size: 44px;
+    --matchup-projected-size: 30px;
+  }
+}
+@media (max-width: 1000px) and (min-width: 801px) {
+  .ticket {
+    --matchup-actual-size: 40px;
+    --matchup-projected-size: 28px;
+  }
+}
+@media (max-width: 360px) {
+  .ticket {
+    --matchup-actual-size: 40px;
+    --matchup-projected-size: 28px;
+  }
+}
+.chip {
+  font-size: 12px;
+}
+.ticket .chip {
+  font-size: 11px;
+}
+.ticket .eyebrow {
+  font-size: 11px;
+}
+.position-rail span {
+  font-size: 9px;
+}
+.position-ticket .player-name {
+  font-size: 12px;
+}
+@media (max-width: 650px) {
+  .award-card .eyebrow {
+    font-size: 7px;
+    line-height: 1.8;
+  }
+  .main-nav button {
+    font-size: 12px;
+  }
+  .ticket .chip {
+    font-size: 10px;
+  }
+  .ticket .eyebrow {
+    font-size: 10px;
+  }
+  .position-rail span {
+    font-size: 8px;
+  }
+  .position-ticket .player-name {
+    font-size: 11px;
+  }
+  .position-between > strong {
+    font-size: 8px;
+  }
+}
+.atm-play-hotspot:focus-visible {
+  outline-color: var(--type-gold);
+}
+.space-app .match-verdict > span {
+  color: var(--type-gold);
+}

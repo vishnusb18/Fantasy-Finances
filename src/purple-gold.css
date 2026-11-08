@@ -18,11 +18,6 @@
   --radius: 20px;
   --shadow: 0 16px 36px #3f277a29;
   color-scheme: light;
-  font-family:
-    Inter,
-    system-ui,
-    -apple-system,
-    sans-serif;
   font-variant-numeric: tabular-nums;
 }
 body {
