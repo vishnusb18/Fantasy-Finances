@@ -126,3 +126,5 @@ See [COMPETITION.md](COMPETITION.md) for scoring v2, projection assumptions, fix
 The purple/gold V4 interface follows the packaged design reference. See [DESIGN_IMPLEMENTATION.md](DESIGN_IMPLEMENTATION.md) for components, verification, and screenshots of the implemented app.
 
 V5 adds concise copy, bounded matchup month arrows with bubble ripples, deeper non-ticket gold panels, a league-only Actual/Potential report chart, and synchronized My Finances history. See [V5_IMPLEMENTATION.md](V5_IMPLEMENTATION.md) for changed components, verification, and before/after screenshots.
+
+The app now opens with the supplied ATM image. Activate PLAY to zoom into the display and reveal the existing app over a dark-purple starfield. See [ATM_ENTRY.md](ATM_ENTRY.md) for the entry flow, accessibility, responsive treatment, changed files, and screenshots.

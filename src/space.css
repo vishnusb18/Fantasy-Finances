@@ -1,0 +1,320 @@
+/* Landing + atmosphere only. Existing financial components and gold materials remain intact. */
+:root {
+  --bg: #0b0716;
+}
+html,
+body {
+  background: #0b0716;
+}
+body {
+  color: #f3edf9;
+}
+.entry-experience {
+  position: relative;
+  isolation: isolate;
+  min-height: 100svh;
+  background: #0b0716;
+}
+.entry-experience:not(.is-app) {
+  height: 100svh;
+  overflow: hidden;
+}
+.space-background {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+  background: #0b0716;
+  opacity: 0;
+}
+.space-nebula {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 63% 9%, #68397429, transparent 40%),
+    radial-gradient(ellipse at 80% 70%, #48205b2b, transparent 45%),
+    radial-gradient(ellipse at 13% 56%, #25254b3b, transparent 46%),
+    linear-gradient(135deg, #0c0917, #10091b 65%, #080812);
+}
+.space-stars {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  opacity: 0.68;
+}
+.is-entering .space-background {
+  z-index: 3;
+  animation: starfield-entry 1100ms ease both;
+}
+.is-app .space-background {
+  opacity: 1;
+}
+.atm-landing {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background: #0b0716;
+  z-index: 2;
+}
+.atm-ambient {
+  position: absolute;
+  inset: -28px;
+  background-position: 50% 48%;
+  background-size: cover;
+  filter: blur(22px) brightness(0.4);
+  transform: scale(1.04);
+}
+.atm-ambient::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 20%,
+    #0b071666 85%
+  );
+}
+.atm-scene {
+  position: absolute;
+  will-change: transform;
+}
+.atm-reference {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+.atm-play-hotspot {
+  position: absolute;
+  display: block;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+.atm-play-hotspot:hover,
+.atm-play-hotspot:active {
+  background: transparent;
+  box-shadow: none;
+}
+.atm-play-hotspot:focus-visible {
+  outline: 3px solid #fff0c7;
+  outline-offset: 5px;
+  box-shadow: 0 0 20px #fff0c74d;
+  border-radius: 9px;
+}
+.atm-play-hotspot:disabled {
+  cursor: default;
+}
+.is-entering .atm-scene {
+  animation: atm-enter 1100ms cubic-bezier(0.55, 0.05, 0.28, 1) both;
+}
+.is-entering .atm-ambient {
+  animation: ambient-exit 1100ms ease both;
+}
+.space-app {
+  position: relative;
+  z-index: 4;
+  min-height: 100svh;
+}
+.is-entering .space-app {
+  animation: app-entry 1100ms ease both;
+  pointer-events: none;
+}
+.entry-status {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.entry-error {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: #0b0716;
+  color: #eee6fa;
+  font-size: 14px;
+}
+.entry-error button {
+  background: #321c58;
+  border: 1px solid #695181;
+  border-radius: 8px;
+  color: #fff0c7;
+  padding: 9px 18px;
+  cursor: pointer;
+}
+@keyframes atm-enter {
+  0% {
+    transform: scale(1);
+  }
+  100% {
+    transform: scale(var(--entry-zoom));
+  }
+}
+@keyframes ambient-exit {
+  0%,
+  35% {
+    opacity: 1;
+  }
+  85%,
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes starfield-entry {
+  0%,
+  30% {
+    opacity: 0;
+  }
+  75%,
+  100% {
+    opacity: 1;
+  }
+}
+@keyframes app-entry {
+  0%,
+  65% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+/* Cosmic surroundings; gold tickets and antique-gold comparison modules keep their identity. */
+.space-app .app-shell {
+  background: transparent;
+}
+.space-app .sidebar {
+  background: linear-gradient(180deg, #20122feb, #130e23f2);
+  border-right-color: #9e6ab62e;
+  box-shadow: 8px 0 38px #00000024;
+}
+.space-app .main-nav button {
+  color: #ded0ee;
+}
+.space-app .main-nav button.active {
+  color: #321c58;
+  background: #f4c45b;
+  border-color: #ffdfa2;
+  box-shadow: 0 4px 20px #e9bf5a12;
+}
+.space-app .main-nav button:hover:not(.active) {
+  background: #8c64b01a;
+}
+.space-app .source .seg {
+  background: #21152fcc;
+  border-color: #a979c34d;
+}
+.space-app .source .seg button {
+  color: #e2d6ef;
+}
+.space-app .source .seg button.on {
+  color: #321c58;
+  background: #ffe4a2;
+}
+.space-app .competition-heading h1,
+.space-app .finances-heading h1,
+.space-app .section-title h2 {
+  color: #f4edf9;
+}
+.space-app .card .section-title h2 {
+  color: #321c58;
+}
+.space-app .month-title,
+.space-app .live-status,
+.space-app .finance-status,
+.space-app .report-status {
+  color: #eee1f6;
+}
+.space-app .match-verdict,
+.space-app .match-verdict strong,
+.space-app .match-verdict > span {
+  color: #f3e4fc;
+}
+.space-app .card,
+.space-app .race-match {
+  box-shadow: 0 14px 35px #00000028;
+}
+.space-app .member-modal {
+  box-shadow: 0 24px 90px #00000066;
+}
+.space-app .modal-backdrop {
+  background: #0b0617b8;
+}
+@media (max-width: 800px) {
+  .space-app .sidebar {
+    background: #1b1129ed;
+    border-bottom-color: #9e6ab62e;
+  }
+}
+.reduced-entry.is-entering .atm-scene {
+  animation: none !important;
+}
+.reduced-entry.is-entering .space-background {
+  animation: reduced-space-entry 220ms ease both !important;
+}
+.reduced-entry.is-entering .space-app {
+  animation: reduced-space-entry 220ms ease both !important;
+  transform: none;
+}
+.reduced-entry.is-entering .atm-landing {
+  animation: reduced-atm-exit 220ms ease both !important;
+}
+@keyframes reduced-space-entry {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes reduced-atm-exit {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .is-entering .atm-scene {
+    animation: none !important;
+  }
+  .is-entering .space-background,
+  .is-entering .space-app {
+    animation: reduced-space-entry 220ms ease both !important;
+  }
+  .is-entering .atm-landing {
+    animation: reduced-atm-exit 220ms ease both !important;
+  }
+  .atm-scene {
+    will-change: auto;
+  }
+}
+@media (max-aspect-ratio: 4/5) {
+  .atm-reference {
+    mask-image: linear-gradient(
+      to bottom,
+      transparent 0%,
+      #000 3%,
+      #000 97%,
+      transparent 100%
+    );
+  }
+}
