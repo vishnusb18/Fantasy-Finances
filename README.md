@@ -1,4 +1,4 @@
-# Fantasy Finances
+# Fantasy Finances (Won Honorable Mention at Hack UTD 2026)
 
 Fantasy Finances turns monthly budgeting into a head-to-head competition. Track your spending in **My Finances**, compete in **Matchup**, follow standings in **League**, and review performance and what-if scenarios in **Reports**. The app includes an offline demo with sample players and history; the finance dashboard can also connect to Nessie, and league state uses SpacetimeDB.
 
